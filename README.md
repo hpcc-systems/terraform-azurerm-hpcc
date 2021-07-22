@@ -21,6 +21,7 @@ This module will deploy an HPCC AKS cluster using other abstracted modules
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
 | admin | Name of the admin | string | - | yes |
+| project_name | Name of the deployment | string | yes |
 
 Note: See the modules listed below for their respective input descriptions.
 
@@ -29,13 +30,13 @@ Note: See the modules listed below for their respective input descriptions.
 
 | Name | Description | URL | Required |
 |------|-------------|-----|:----------:|
-| subscription | Queries enabled azure subscription from host machine | github.com/Azure-Terraform/terraform-azurerm-subscription-data.git | yes |
+| subscription | Queries enabled azure subscription from host machine | https://github.com/Azure-Terraform/terraform-azurerm-subscription-data.git | yes |
 | naming | Enforces naming conventions | - | yes |
-| metadata | Provides metadata | github.com/Azure-Terraform/terraform-azurerm-metadata.git | yes |
-| resource_group | Creates a resource group | github.com/Azure-Terraform/terraform-azurerm-resource-group.git | yes |
-| virtual_network | Creates a virtual network | github.com/Azure-Terraform/terraform-azurerm-virtual-network.git | yes |
-| cheapest_spot_region | Returns the region name with the cheapest instance based on a given size | github.com/gfortil/terraform-azurerm-cheapest-region.git | no |
-| kubernetes | Creates an Azure Kubernetes Service Cluster | github.com/Azure-Terraform/terraform-azurerm-kubernetes.git | yes |
+| metadata | Provides metadata | https://github.com/Azure-Terraform/terraform-azurerm-metadata.git | yes |
+| resource_group | Creates a resource group | https://github.com/Azure-Terraform/terraform-azurerm-resource-group.git | yes |
+| virtual_network | Creates a virtual network | https://github.com/Azure-Terraform/terraform-azurerm-virtual-network.git | yes |
+| cheapest_spot_region | Returns the region name with the cheapest instance based on a given size | https://github.com/gfortil/terraform-azurerm-cheapest-region.git | no |
+| kubernetes | Creates an Azure Kubernetes Service Cluster | https://github.com/Azure-Terraform/terraform-azurerm-kubernetes.git | yes |
 | hpcc_helm | Deploy all currently supported HPCC helm charts (aks, pv and elk) | - | yes |
 
 
@@ -43,4 +44,4 @@ Note: See the modules listed below for their respective input descriptions.
 
 | Name | Description | 
 |------|-------------|
-| aks_login | Outputs the login information to connect to the k8s cluster |
+| aks_login | Get access credentials for the managed Kubernetes cluster. |
