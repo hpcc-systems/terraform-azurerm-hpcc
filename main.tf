@@ -188,7 +188,7 @@ module "kubernetes" {
 }
 
 module "helm" {
-  source = "../terraform-azurerm-hpcc-helm"
+  source = "github.com/gfortil/terraform-azurerm-hpcc-helm.git?ref=v2.0.0"
 
   image = {
     version = var.hpcc_image.version
