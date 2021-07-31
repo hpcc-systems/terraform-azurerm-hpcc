@@ -18,23 +18,6 @@ provider "helm" {
   }
 }
 
-locals {
-  names = var.naming_conventions_enabled ? module.metadata[0].names : merge(
-    {
-      business_unit     = var.metadata.business_unit
-      environment       = var.metadata.environment
-      location          = var.metadata.location
-      market            = var.metadata.market
-      subscription_type = var.metadata.subscription_type
-    },
-    var.metadata.product_group != "" ? { product_group = var.metadata.product_group } : {},
-    var.metadata.product_name != "" ? { product_name = var.metadata.product_name } : {},
-    var.metadata.resource_group_type != "" ? { resource_group_type = var.metadata.resource_group_type } : {}
-  )
-
-  tags = merge(module.metadata[0].tags, { "admin" : var.admin.name }, { "email" : var.admin.email })
-}
-
 data "http" "my_ip" {
   url = "http://ipv4.icanhazip.com"
 }
@@ -72,7 +55,7 @@ module "metadata" {
   naming_rules = module.naming[0].yaml
 
   market              = var.metadata.market
-  location            = var.metadata.location
+  location            = var.resource_group.location
   sre_team            = var.metadata.sre_team
   environment         = var.metadata.environment
   product_name        = var.metadata.product_name
@@ -88,7 +71,7 @@ module "resource_group" {
   source = "github.com/Azure-Terraform/terraform-azurerm-resource-group.git?ref=v2.0.0"
 
   unique_name = var.resource_group.unique_name
-  location    = var.metadata.location
+  location    = var.resource_group.location
   names       = local.names
   tags        = local.tags
 }
@@ -96,7 +79,7 @@ module "resource_group" {
 module "virtual_network" {
   source = "github.com/Azure-Terraform/terraform-azurerm-virtual-network.git?ref=v2.9.0"
 
-  naming_rules = var.naming_conventions_enabled ? module.naming[0].yaml : null
+  naming_rules = var.naming_conventions_enabled ? module.naming[0].yaml : ""
 
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
@@ -140,7 +123,7 @@ module "kubernetes" {
   source = "github.com/Azure-Terraform/terraform-azurerm-kubernetes.git?ref=v4.2.1"
 
   cluster_name        = "${local.names.resource_group_type}-${local.names.product_name}-terraform-${local.names.location}-${var.admin.name}"
-  location            = var.metadata.location
+  location            = var.resource_group.location
   names               = local.names
   tags                = local.tags
   resource_group_name = module.resource_group.name
@@ -187,33 +170,75 @@ module "kubernetes" {
 
 }
 
-module "helm" {
-  source = "github.com/gfortil/terraform-azurerm-hpcc-helm.git?ref=v2.0.0"
 
-  image = {
-    version = var.hpcc_image.version
-    root    = var.hpcc_image.root
-    name    = var.hpcc_image.name
+resource "null_resource" "helm_chart_clone" {
+  count = var.use_local_charts && length(var.hpcc_helm.local_chart) == 0 ? 1 : 0
+
+  provisioner "local-exec" {
+    command = local.custom_data
+  }
+}
+
+resource "helm_release" "hpcc" {
+  name              = var.hpcc_helm.name
+  namespace         = var.hpcc_helm.namespace
+  chart             = var.use_local_charts ? local.hpcc_local_chart : local.hpcc_remote_chart
+  repository        = var.use_local_charts ? null : local.repository
+  version           = var.use_local_charts ? null : var.hpcc_helm.chart_version
+  values            = var.hpcc_helm.values == null ? null : [for v in var.hpcc_helm.values : file(v)]
+  dependency_update = false
+  create_namespace  = true
+
+  set {
+    name  = "global.image.root"
+    value = var.hpcc_image.root
   }
 
-  use_local_charts = var.use_local_charts
-
-  hpcc_helm = {
-    local_chart = var.hpcc_helm.local_chart # Clone helm-chart.git if left empty. Examples: ./HPCC-Platform, ./helm-chart
-
-    name          = var.hpcc_helm.name
-    chart_version = var.hpcc_helm.chart_version # Tag or branch for local. Examples: 8.2.4, my-feature-branch
-    namespace     = var.hpcc_helm.namespace
-    values        = var.hpcc_helm.values # A list of desired state files similar to -f in CLI
+  set {
+    name  = "global.image.name"
+    value = var.hpcc_image.name
   }
 
-  storage_helm = {
-    values = var.storage_helm.values
+  set {
+    name  = "global.image.version"
+    value = var.hpcc_image.version
   }
 
-  elk_helm = {
-    name = var.elk_helm.name
-  }
+  timeout = 600
+  depends_on = [
+    null_resource.helm_chart_clone,
+    helm_release.storage
+  ]
+}
+
+resource "helm_release" "storage" {
+  name             = "azstorage"
+  namespace        = var.hpcc_helm.namespace
+  chart            = var.use_local_charts ? local.storage_local_chart : local.storage_remote_chart
+  values           = var.hpcc_storage.values == null ? null : [for v in var.hpcc_storage.values : file(v)]
+  create_namespace = true
+
+  timeout = 600
+  depends_on = [
+    null_resource.helm_chart_clone
+  ]
+}
+
+resource "helm_release" "elk" {
+  count = var.hpcc_elk.enabled ? 1 : 0
+
+  name              = var.hpcc_elk.name
+  namespace         = var.hpcc_helm.namespace
+  chart             = var.use_local_charts ? local.elk_local_chart : local.elk_remote_chart
+  values            = var.hpcc_elk.values == null ? null : [for v in var.hpcc_elk.values : file(v)]
+  dependency_update = false
+  create_namespace  = true
+
+  timeout = 600
+  depends_on = [
+    null_resource.helm_chart_clone,
+    helm_release.hpcc
+  ]
 }
 
 output "aks_login" {

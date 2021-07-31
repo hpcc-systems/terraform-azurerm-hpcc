@@ -6,7 +6,6 @@ admin = {
 naming_conventions_enabled = true # true will enforce all metadata inputs below
 
 metadata = {
-  location            = "eastus2"
   project             = "hpccdemo"
   product_name        = "contosoweb"
   business_unit       = "commercial"
@@ -18,8 +17,11 @@ metadata = {
   subscription_type   = "dev"
 }
 
+tags = { "justification" = "testing" }
+
 resource_group = {
   unique_name = true
+  location    = "eastus2"
 }
 
 system_node_pool = {
@@ -50,10 +52,12 @@ hpcc_helm = {
   values        = ["HPCC-Platform/helm/examples/azure/values-retained-azurefile.yaml", "esp.yaml"]
 }
 
-storage_helm = {
+hpcc_storage = {
   values = ["HPCC-Platform/helm/examples/azure/hpcc-azurefile/values.yaml"]
 }
 
-elk_helm = {
-  name = "myhpccelk"
+hpcc_elk = {
+  enabled = true
+  name    = "myhpccelk"
+  values  = null
 }

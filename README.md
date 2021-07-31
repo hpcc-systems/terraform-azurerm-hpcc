@@ -39,7 +39,6 @@ Setting any of the input variables to null will use their default values. See th
 
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| location | Cloud region in which to deploy the cluster resources. | string | - | yes |
 | project_name | Name of the project. | string | - | yes |
 | product_name | Name of the product. | string | hpcc | no |
 | business_unit | Name of your bussiness unit. | string | - | no |
@@ -51,10 +50,17 @@ Setting any of the input variables to null will use their default values. See th
 | subscription_type | Subscription type. | string | - | no |
 <br />
 
+### Tags
+ Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:-----:|
+| tags | Additional resource tags. | map(string) | admin | no |
+<br />
+
 ### Resource Group
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
 | unique_name | Will concatenate a number at the end of your resource group name. | bool | true | yes |
+| location | Cloud region in which to deploy the cluster resources. | string | - | yes |
 <br />
 
 ### System Node Pool
@@ -99,16 +105,18 @@ If use_local_charts is true and local_chart is empty or set to null, the value f
 | values | List of desired state files to use similar to -f in CLI. | list(string) | - | yes |
 <br />
 
-### Storage Helm
+### HPCC Storage Helm
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
 | values | List of desired state files to use similar to -f in CLI. | list(string) | - | yes |
 <br />
 
-### ELK Helm
+### HPCC ELK Helm
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
+| enabled | Enable ELK | bool | true | yes |
 | name | name | Release name of the chart. | string | myhpccelk | yes |
+| values | List of desired state files to use similar to -f in CLI. | list(string) | - | yes |
 <br />
 
 ## Abstracted Modules
@@ -130,7 +138,7 @@ If use_local_charts is true and local_chart is empty or set to null, the value f
 | Name | Description | 
 |------|-------------|
 | aks_login | Get access credentials for the managed Kubernetes cluster. |
-| recommendations | A list of Security and cost recommendation for this deployment. |
+| recommendations | A list of security and cost recommendations for this deployment. |
 <br />
 
 ## How to Run This?
@@ -139,11 +147,13 @@ If use_local_charts is true and local_chart is empty or set to null, the value f
 3. Open terraform-azurerm-hpcc-aks/admin.tfvars file.
 4. Set variables to your preferred values.
 5. Save terraform-azurerm-hpcc-aks/admin.tfvars file.
-6. Run: `terraform apply -var-file=admin.tf`
-7. Type: `yes`
-8. Copy aks_login command.
-9. Run aks_login in your command line.
-10. Accept to overwrite your current context.
-11. List pods: `kubectl get pods`
-12. List services: `kubectl get svc`
-13. List persistent volume claims: `kubectl get pvc`
+6. Run: `terraform init`
+7. Run: `terraform apply -var-file=admin.tfvars`
+8. Type: `yes`
+9. Copy aks_login command.
+10. Run aks_login in your command line.
+11. Accept to overwrite your current context.
+12. List pods: `kubectl get pods`
+13. List services: `kubectl get svc`
+14. List persistent volume claims: `kubectl get pvc`
+15. Delete cluster: `terraform destroy -var-file=admin.tfvars`

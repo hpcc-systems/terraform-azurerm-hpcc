@@ -16,7 +16,6 @@ variable "metadata" {
   description = "Metadata module variables."
   type = object({
     market              = string
-    location            = string
     sre_team            = string
     environment         = string
     product_name        = string
@@ -30,7 +29,6 @@ variable "metadata" {
   default = {
     business_unit       = ""
     environment         = ""
-    location            = ""
     market              = ""
     product_group       = ""
     product_name        = "hpcc"
@@ -41,14 +39,21 @@ variable "metadata" {
   }
 }
 
+variable "tags" {
+  description = "Additional resource tags."
+  type        = map(string)
+}
+
 variable "resource_group" {
   description = "Resource group module variables."
   type = object({
     unique_name = bool
+    location    = string
   })
 
   default = {
     unique_name = true
+    location    = null
   }
 }
 
@@ -123,20 +128,27 @@ variable "hpcc_helm" {
   }
 }
 
-variable "storage_helm" {
+variable "hpcc_storage" {
   description = "HPCC helm chart variables."
   type = object({
     values = list(string)
   })
+  default = {
+    values = []
+  }
 }
 
-variable "elk_helm" {
+variable "hpcc_elk" {
   description = "HPCC helm chart variables."
   type = object({
-    name = string
+    enabled = bool
+    name    = string
+    values  = list(string)
   })
 
   default = {
-    name = "myhpccelk"
+    enabled = true
+    name    = "myhpccelk"
+    values  = []
   }
 }
