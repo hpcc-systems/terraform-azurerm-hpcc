@@ -170,7 +170,6 @@ module "kubernetes" {
 
 }
 
-
 resource "null_resource" "helm_chart_clone" {
   count = var.use_local_charts && length(var.hpcc_helm.local_chart) == 0 ? 1 : 0
 
@@ -204,11 +203,8 @@ resource "helm_release" "hpcc" {
     value = var.hpcc_image.version
   }
 
-  timeout = 600
-  depends_on = [
-    null_resource.helm_chart_clone,
-    helm_release.storage
-  ]
+  timeout    = 600
+  depends_on = [null_resource.helm_chart_clone, helm_release.storage]
 }
 
 resource "helm_release" "storage" {
@@ -218,10 +214,8 @@ resource "helm_release" "storage" {
   values           = var.hpcc_storage.values == null ? null : [for v in var.hpcc_storage.values : file(v)]
   create_namespace = true
 
-  timeout = 600
-  depends_on = [
-    null_resource.helm_chart_clone
-  ]
+  timeout    = 600
+  depends_on = [null_resource.helm_chart_clone]
 }
 
 resource "helm_release" "elk" {
@@ -234,11 +228,38 @@ resource "helm_release" "elk" {
   dependency_update = false
   create_namespace  = true
 
-  timeout = 600
-  depends_on = [
-    null_resource.helm_chart_clone,
-    helm_release.hpcc
-  ]
+  timeout    = 600
+  depends_on = [null_resource.helm_chart_clone, helm_release.hpcc]
+}
+
+resource "azurerm_network_security_rule" "ingress_public_allow_nginx" {
+  name                        = "Allow_ECLWatch_Ingress"
+  priority                    = 100
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "tcp"
+  source_port_range           = "*"
+  destination_port_ranges     = ["80", "8010"]
+  source_address_prefix       = "Internet"
+  destination_address_prefix  = "*"
+  resource_group_name         = module.virtual_network.subnets["iaas-public"].resource_group_name
+  network_security_group_name = module.virtual_network.subnets["iaas-public"].network_security_group_name
+}
+
+resource "helm_release" "ingress-nginx" {
+  name       = "ingress-nginx"
+  chart      = "ingress-nginx"
+  repository = "https://kubernetes.github.io/ingress-nginx"
+
+  depends_on = [module.kubernetes]
+}
+
+resource "null_resource" "kubectl" {
+  provisioner "local-exec" {
+    command = "kubectl apply -f ${path.root}/eclwatch-ingress.yaml"
+  }
+
+  depends_on = [helm_release.ingress-nginx]
 }
 
 output "aks_login" {
