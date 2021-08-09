@@ -49,7 +49,7 @@ hpcc_helm = {
   chart_version = "8.2.4"
   namespace     = "default"
   name          = "myhpcck8s"
-  values        = ["HPCC-Platform/helm/examples/azure/values-retained-azurefile.yaml", "esp.yaml"]
+  values        = ["HPCC-Platform/helm/examples/azure/values-retained-azurefile.yaml"]
 }
 
 hpcc_storage = {

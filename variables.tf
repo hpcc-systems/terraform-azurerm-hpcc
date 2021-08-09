@@ -9,7 +9,7 @@ variable "admin" {
 variable "naming_conventions_enabled" {
   description = "Naming convention module."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "metadata" {
@@ -42,6 +42,10 @@ variable "metadata" {
 variable "tags" {
   description = "Additional resource tags."
   type        = map(string)
+
+  default = {
+    "" = ""
+  }
 }
 
 variable "resource_group" {
@@ -63,11 +67,6 @@ variable "system_node_pool" {
     vm_size    = string
     node_count = number
   })
-
-  default = {
-    node_count = 1
-    vm_size    = "Standard_D2s_v3"
-  }
 }
 
 variable "additional_node_pool" {
@@ -83,7 +82,7 @@ variable "additional_node_pool" {
     enable_auto_scaling = true
     max_count           = 0
     min_count           = 0
-    vm_size             = "Standard_D2s_v3"
+    vm_size             = ""
   }
 }
 

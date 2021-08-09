@@ -136,7 +136,6 @@ If use_local_charts is true and local_chart is empty or set to null, the value f
 | virtual_network | Creates a virtual network | https://github.com/Azure-Terraform/terraform-azurerm-virtual-network.git | yes |
 | cheapest_spot_region | Returns the region name with the cheapest instance based on a given size | https://github.com/gfortil/terraform-azurerm-cheapest-region.git | no |
 | kubernetes | Creates an Azure Kubernetes Service Cluster | https://github.com/Azure-Terraform/terraform-azurerm-kubernetes.git | yes |
-| hpcc_helm | Deploy all currently supported HPCC helm charts (aks, pv and elk) | - | yes |
 <br />
 
 ## Outputs
@@ -163,3 +162,4 @@ If use_local_charts is true and local_chart is empty or set to null, the value f
 13. List services: `kubectl get svc`
 14. List persistent volume claims: `kubectl get pvc`
 15. Delete cluster: `terraform destroy -var-file=admin.tfvars`
+16. Type: `yes`
