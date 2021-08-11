@@ -14,21 +14,14 @@ locals {
 
   tags = var.naming_conventions_enabled ? merge(module.metadata[0].tags, { "admin" = var.admin.name, "email" = var.admin.email }, var.tags) : merge(var.tags, { "admin" = var.admin.name, "email" = var.admin.email })
 
-  repository = "https://hpcc-systems.github.io/helm-chart/"
-  git_repo   = "https://github.com/hpcc-systems/helm-chart.git"
+  git_repo      = "https://github.com/hpcc-systems/helm-chart.git"
+  chart_prefix  = var.hpcc_helm.chart == null || var.hpcc_helm.chart == "" ? "${path.root}/helm-chart" : var.hpcc_helm.chart
+  hpcc_chart    = "${local.chart_prefix}/helm/hpcc"
+  storage_chart = "${local.chart_prefix}/helm/examples/azure/hpcc-azurefile"
+  elk_chart     = "${local.chart_prefix}/helm/managed/logging/elastic"
+  version       = var.charts_version != null && var.charts_version != "" ? var.charts_version : regex("[(\\d)*].[(\\d)*].[(\\d)*]", var.hpcc_image.version)
 
-  hpcc_remote_chart    = "hpcc"
-  storage_remote_chart = "hpcc-azurefile"
-  elk_remote_chart     = "elastic4hpcclogs"
-
-  local_chart         = var.use_local_charts && (var.hpcc_helm.local_chart == null || var.hpcc_helm.local_chart == "") ? "${path.root}/helm-chart" : var.hpcc_helm.local_chart
-  hpcc_local_chart    = "${local.local_chart}/helm/hpcc"
-  storage_local_chart = "${local.local_chart}/helm/examples/azure/hpcc-azurefile"
-  elk_local_chart     = "${local.local_chart}/helm/managed/logging/elastic"
-
-  custom_data = templatefile("${path.module}/local_exec.tpl", { version = var.hpcc_helm.chart_version, repository = local.git_repo })
-
-  kube_admin_config = module.kubernetes.kube_config_raw
+  custom_data = templatefile("${path.module}/local_exec.tpl", { version = local.version, repository = local.git_repo })
 
   apply = "apply -f ${path.root}/eclwatch-ingress.yaml"
 }

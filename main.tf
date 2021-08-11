@@ -171,20 +171,19 @@ module "kubernetes" {
 }
 
 resource "null_resource" "helm_chart_clone" {
-  count = var.use_local_charts && length(var.hpcc_helm.local_chart) == 0 ? 1 : 0
+  count = length(var.hpcc_helm.chart) == 0 ? 1 : 0
 
   provisioner "local-exec" {
-    command = local.custom_data
+    command     = local.custom_data
+    interpreter = ["/bin/bash", "-c"]
   }
 }
 
 resource "helm_release" "hpcc" {
   name              = var.hpcc_helm.name
   namespace         = var.hpcc_helm.namespace
-  chart             = var.use_local_charts ? local.hpcc_local_chart : local.hpcc_remote_chart
-  repository        = var.use_local_charts ? null : local.repository
-  version           = var.use_local_charts ? null : var.hpcc_helm.chart_version
-  values            = var.hpcc_helm.values == null ? null : [for v in var.hpcc_helm.values : file(v)]
+  chart             = local.hpcc_chart
+  values            = var.hpcc_helm.values == null ? null : concat([file("${path.root}/esp.yaml")], [for v in var.hpcc_helm.values : file(v)])
   dependency_update = false
   create_namespace  = true
 
@@ -210,7 +209,7 @@ resource "helm_release" "hpcc" {
 resource "helm_release" "storage" {
   name             = "azstorage"
   namespace        = var.hpcc_helm.namespace
-  chart            = var.use_local_charts ? local.storage_local_chart : local.storage_remote_chart
+  chart            = local.storage_chart
   values           = var.hpcc_storage.values == null ? null : [for v in var.hpcc_storage.values : file(v)]
   create_namespace = true
 
@@ -223,16 +222,16 @@ resource "helm_release" "elk" {
 
   name              = var.hpcc_elk.name
   namespace         = var.hpcc_helm.namespace
-  chart             = var.use_local_charts ? local.elk_local_chart : local.elk_remote_chart
+  chart             = local.elk_chart
   values            = var.hpcc_elk.values == null ? null : [for v in var.hpcc_elk.values : file(v)]
-  dependency_update = false
+  dependency_update = true
   create_namespace  = true
 
   timeout    = 600
   depends_on = [null_resource.helm_chart_clone, helm_release.hpcc]
 }
 
-resource "azurerm_network_security_rule" "ingress_public_allow_nginx" {
+resource "azurerm_network_security_rule" "ingress-nginx" {
   name                        = "Allow_ECLWatch_Ingress"
   priority                    = 100
   direction                   = "Inbound"
@@ -256,7 +255,12 @@ resource "helm_release" "ingress-nginx" {
 
 resource "null_resource" "kubectl" {
   provisioner "local-exec" {
-    command = "kubectl apply -f ${path.root}/eclwatch-ingress.yaml"
+    command     = "kubectl ${local.apply} --kubeconfig <(echo $KUBECONFIG | base64 --decode)"
+    interpreter = ["/bin/bash", "-c"]
+
+    environment = {
+      KUBECONFIG = base64encode(module.kubernetes.kube_config_raw)
+    }
   }
 
   depends_on = [helm_release.ingress-nginx]
@@ -266,6 +270,6 @@ output "aks_login" {
   value = "az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name}"
 }
 
-output "recommendations" {
+output "advisor_recommendations" {
   value = data.azurerm_advisor_recommendations.advisor.recommendations
 }

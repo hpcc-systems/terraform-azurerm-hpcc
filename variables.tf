@@ -101,29 +101,26 @@ variable "hpcc_image" {
   }
 }
 
-
-variable "use_local_charts" {
-  description = "Use local charts instead of remote."
-  type        = bool
-  default     = false
+variable "charts_version" {
+  description = "The version of the charts."
+  type        = string
+  default     = null
 }
 
 variable "hpcc_helm" {
   description = "HPCC helm chart variables."
   type = object({
-    local_chart   = string
-    chart_version = string
-    namespace     = string
-    name          = string
-    values        = list(string)
+    chart     = string
+    namespace = string
+    name      = string
+    values    = list(string)
   })
 
   default = {
-    chart_version = null
-    local_chart   = null
-    name          = "myhpcck8s"
-    namespace     = "default"
-    values        = []
+    chart     = null
+    name      = "myhpcck8s"
+    namespace = "default"
+    values    = []
   }
 }
 

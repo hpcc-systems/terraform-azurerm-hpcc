@@ -1,0 +1,63 @@
+esp:
+- name: eclwatch
+  ## Pre-configured esp applications include eclwatch, eclservices, and eclqueries
+  application: eclwatch
+  auth: none
+  replicas: 1
+  service:
+    ## port can be used to change the local port used by the pod. If omitted, the default port (8880) is used
+    port: 8888
+    ## servicePort controls the port that this service will be exposed on, either internally to the cluster, or externally
+    servicePort: 8010
+    ## Specify visibility: local (or global) if you want the service available from outside the cluster. Typically, eclwatch and wsecl are published externally, while eclservices is designed for internal use.
+    visibility: global
+    ## Annotations can be specified on a service - for example to specify provider-specific information such as service.beta.kubernetes.io/azure-load-balancer-internal-subnet
+    #annotations:
+    #  service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "mysubnet"
+    ## You can also specify labels on a service
+    #labels:
+    #  mylabel: "3"
+  #resources:
+  #  cpu: "1"
+  #  memory: "2G"
+- name: eclservices
+  application: eclservices
+  auth: none
+  replicas: 1
+  service:
+    servicePort: 8010
+    visibility: cluster
+  #resources:
+  #  cpu: "250m"
+  #  memory: "1G"
+- name: eclqueries
+  application: eclqueries
+  auth: none
+  replicas: 1
+  service:
+    visibility: local
+    servicePort: 8002
+  #resources:
+  #  cpu: "250m"
+  #  memory: "1G"
+- name: esdl-sandbox
+  application: esdl-sandbox
+  auth: none
+  replicas: 1
+  service:
+    visibility: local
+    servicePort: 8899
+  #resources:
+  #  cpu: "250m"
+  #  memory: "1G"
+- name: sql2ecl
+  application: sql2ecl
+  auth: none
+  replicas: 1
+  service:
+    visibility: local
+    servicePort: 8510
+  #domain: hpccsql.com
+  #resources:
+  #  cpu: "250m"
+  #  memory: "1G"

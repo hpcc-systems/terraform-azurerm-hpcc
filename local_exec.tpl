@@ -1,5 +1,3 @@
-#!/bin/bash
-
 CHART_REPO_NAME="helm-chart"
 
 if [ -d $CHART_REPO_NAME ]; then

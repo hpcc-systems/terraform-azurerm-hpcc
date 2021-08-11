@@ -42,14 +42,11 @@ hpcc_image = {
   root    = "hpccsystems"
 }
 
-use_local_charts = false
-
 hpcc_helm = {
-  local_chart   = ""
-  chart_version = "8.2.4"
-  namespace     = "default"
-  name          = "myhpcck8s"
-  values        = ["HPCC-Platform/helm/examples/azure/values-retained-azurefile.yaml"]
+  chart     = ""
+  namespace = "default"
+  name      = "myhpcck8s"
+  values    = ["HPCC-Platform/helm/examples/azure/values-retained-azurefile.yaml"]
 }
 
 hpcc_storage = {
@@ -61,3 +58,9 @@ hpcc_elk = {
   name    = "myhpccelk"
   values  = null
 }
+
+# Optional Attributes
+# -------------------
+
+# charts_version - The version of the charts if a custom image version is being used.
+# Example: charts_version = "8.2.8"

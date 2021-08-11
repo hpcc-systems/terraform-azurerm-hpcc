@@ -93,19 +93,16 @@ Setting any of the input variables to null will use their default values. See th
 | name | Image name to use. | string | platform-core | yes |
 <br />
 
-### Local or Remote Charts
-If use_local_charts is true and local_chart is empty or set to null, the value for chart_version will be used as a branch/tag to locally clone the aforementioned chart version of hpcc-systems' helm_chart GitHub repo in the root module directory. That directory will not be tracked by git to avoid potential merge conflicts. <br />
-
+### Version of Charts
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| use_local_charts | Enable local or remote charts | bool | false | yes |
-<br />
+| charts_version | Version of the charts if a custom image version is being used. | string | null | no |
 
+<br />
 ### HPCC Helm
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| local_chart | Path to local chart directory name. Examples: ./HPCC-Platform, ./helm-chart. | string | - | yes |
-| chart_version | Version of the charts to use. | string | - | yes |
+| chart | Path to local chart directory name. Examples: ./HPCC-Platform, ./helm-chart. | string | - | yes |
 | namespace | Namespace to use. | string | default | yes |
 | name | Release name of the chart. | string | myhpcck8s | yes |
 | values | List of desired state files to use similar to -f in CLI. | list(string) | - | yes |
