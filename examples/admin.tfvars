@@ -46,11 +46,7 @@ hpcc_helm = {
   chart     = ""
   namespace = "default"
   name      = "myhpcck8s"
-  values    = ["HPCC-Platform/helm/examples/azure/values-retained-azurefile.yaml"]
-}
-
-hpcc_storage = {
-  values = ["HPCC-Platform/helm/examples/azure/hpcc-azurefile/values.yaml"]
+  values    = ["example.yaml"]
 }
 
 hpcc_elk = {
@@ -64,3 +60,12 @@ hpcc_elk = {
 
 # charts_version - The version of the charts if a custom image version is being used.
 # Example: charts_version = "8.2.8"
+
+# auto_connect - Automatically connect to the kubernetes cluster from the host machine
+# Example: auto_connect = true 
+
+# hpcc_storage - additional values.yaml for storage deployment
+# Example: 
+# hpcc_storage = {
+#   values = ["example.yaml"]
+# }

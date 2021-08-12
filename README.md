@@ -111,7 +111,7 @@ Setting any of the input variables to null will use their default values. See th
 ### HPCC Storage Helm
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| values | List of desired state files to use similar to -f in CLI. | list(string) | - | yes |
+| values | List of desired state files to use similar to -f in CLI. | list(string) | - | no |
 <br />
 
 ### HPCC ELK Helm
@@ -120,6 +120,12 @@ Setting any of the input variables to null will use their default values. See th
 | enabled | Enable ELK | bool | true | yes |
 | name | name | Release name of the chart. | string | myhpccelk | yes |
 | values | List of desired state files to use similar to -f in CLI. | list(string) | - | yes |
+<br />
+
+### Auto Connect to Kubernetes Cluster
+ Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:-----:|
+| auto_connect | Automatically connect to the Kubernetes cluster from the host machine by overwriting the current context. | bool | false | no |
 <br />
 
 ## Abstracted Modules
@@ -152,11 +158,12 @@ Setting any of the input variables to null will use their default values. See th
 6. Run: `terraform init`
 7. Run: `terraform apply -var-file=admin.tfvars`
 8. Type: `yes`
-9. Copy aks_login command.
-10. Run aks_login in your command line.
-11. Accept to overwrite your current context.
-12. List pods: `kubectl get pods`
-13. List services: `kubectl get svc`
-14. List persistent volume claims: `kubectl get pvc`
-15. Delete cluster: `terraform destroy -var-file=admin.tfvars`
-16. Type: `yes`
+9. If auto-connect is set to true (in admin.tfvars), skip to step 13.
+10. Copy aks_login command.
+11. Run aks_login in your command line.
+12. Accept to overwrite your current context.
+13. List pods: `kubectl get pods`
+14. List services: `kubectl get svc`
+15. List persistent volume claims: `kubectl get pvc`
+16. Delete cluster: `terraform destroy -var-file=admin.tfvars`
+17. Type: `yes`

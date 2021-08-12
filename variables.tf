@@ -6,6 +6,12 @@ variable "admin" {
   })
 }
 
+variable "auto_connect" {
+  description = "Automatically connect to the Kubernetes cluster from the host machine by overwriting the current context."
+  type        = bool
+  default     = false
+}
+
 variable "naming_conventions_enabled" {
   description = "Naming convention module."
   type        = bool

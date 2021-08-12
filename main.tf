@@ -171,19 +171,21 @@ module "kubernetes" {
 }
 
 resource "null_resource" "helm_chart_clone" {
-  count = length(var.hpcc_helm.chart) == 0 ? 1 : 0
+  count = length(var.hpcc_helm.chart) == 0 && var.hpcc_helm.chart == null ? 1 : 0
 
   provisioner "local-exec" {
     command     = local.custom_data
-    interpreter = ["/bin/bash", "-c"]
+    interpreter = !local.is_windows_os ? ["/bin/bash", "-c"] : ["PowerShell", "-Command"]
   }
 }
 
 resource "helm_release" "hpcc" {
-  name              = var.hpcc_helm.name
-  namespace         = var.hpcc_helm.namespace
-  chart             = local.hpcc_chart
-  values            = var.hpcc_helm.values == null ? null : concat([file("${path.root}/esp.yaml")], [for v in var.hpcc_helm.values : file(v)])
+  name      = var.hpcc_helm.name
+  namespace = var.hpcc_helm.namespace
+  chart     = local.hpcc_chart
+  values = var.hpcc_helm.values == null ? null : concat([file("${path.root}/esp.yaml")],
+    [file("${path.root}/helm-chart/helm/examples/azure/values-retained-azurefile.yaml")],
+  [for v in var.hpcc_helm.values : file(v)])
   dependency_update = false
   create_namespace  = true
 
@@ -202,7 +204,7 @@ resource "helm_release" "hpcc" {
     value = var.hpcc_image.version
   }
 
-  timeout    = 600
+  timeout    = 1000
   depends_on = [null_resource.helm_chart_clone, helm_release.storage]
 }
 
@@ -255,8 +257,8 @@ resource "helm_release" "ingress-nginx" {
 
 resource "null_resource" "kubectl" {
   provisioner "local-exec" {
-    command     = "kubectl ${local.apply} --kubeconfig <(echo $KUBECONFIG | base64 --decode)"
-    interpreter = ["/bin/bash", "-c"]
+    command     = local.is_windows_os ? "${local.kubectl_command} --kubeconfig <(echo $KUBECONFIG | openssl base64 -d)" : "${local.kubectl_command} --kubeconfig <(echo $KUBECONFIG | base64 --decode)"
+    interpreter = !local.is_windows_os ? ["/bin/bash", "-c"] : ["PowerShell", "-Command"]
 
     environment = {
       KUBECONFIG = base64encode(module.kubernetes.kube_config_raw)
@@ -264,6 +266,17 @@ resource "null_resource" "kubectl" {
   }
 
   depends_on = [helm_release.ingress-nginx]
+}
+
+resource "null_resource" "az" {
+  count = var.auto_connect ? 1 : 0
+
+  provisioner "local-exec" {
+    command     = local.az_command
+    interpreter = !local.is_windows_os ? ["/bin/bash", "-c"] : ["PowerShell", "-Command"]
+  }
+
+  depends_on = [module.kubernetes]
 }
 
 output "aks_login" {

@@ -21,7 +21,10 @@ locals {
   elk_chart     = "${local.chart_prefix}/helm/managed/logging/elastic"
   version       = var.charts_version != null && var.charts_version != "" ? var.charts_version : regex("[(\\d)*].[(\\d)*].[(\\d)*]", var.hpcc_image.version)
 
-  custom_data = templatefile("${path.module}/local_exec.tpl", { version = local.version, repository = local.git_repo })
+  custom_data = templatefile(!local.is_windows_os ? "${path.module}/bash.tpl" : "${path.module}/batch.tpl", { version = local.version, repository = local.git_repo })
 
-  apply = "apply -f ${path.root}/eclwatch-ingress.yaml"
+  kubectl_command = "kubectl apply -f ${path.root}/eclwatch-ingress.yaml"
+  az_command      = "az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name} --overwrite"
+
+  is_windows_os = substr(pathexpand("~"), 0, 1) == "/" ? false : true
 }
