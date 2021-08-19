@@ -3,7 +3,7 @@ admin = {
   email = "hpccdemo@example.com"
 }
 
-enable_naming_conventions = true # true will enforce all metadata inputs below
+disable_naming_conventions = true # true will enforce all metadata inputs below
 
 metadata = {
   project             = "hpccdemo"
@@ -38,7 +38,6 @@ additional_node_pool = {
 
 hpcc = {
   version   = "8.2.12-rc1"
-  chart     = ""
   namespace = "default"
   name      = "myhpcck8s"
   chart     = null
@@ -72,7 +71,7 @@ elk = {
 # enable_nginx - Enable NGINX for ECLWatch
 # Example: enable_nginx = true  
 
-# storage - Additional values.yaml for storage deployment.
+# storage - Settings for the storage account.
 # Example: 
 # storage = {
 #   disable_storage_account = false
