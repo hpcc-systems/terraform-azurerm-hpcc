@@ -1,5 +1,5 @@
 locals {
-  names = var.naming_conventions_enabled ? module.metadata[0].names : merge(
+  names = var.disable_naming_conventions ? merge(
     {
       business_unit     = var.metadata.business_unit
       environment       = var.metadata.environment
@@ -10,21 +10,20 @@ locals {
     var.metadata.product_group != "" ? { product_group = var.metadata.product_group } : {},
     var.metadata.product_name != "" ? { product_name = var.metadata.product_name } : {},
     var.metadata.resource_group_type != "" ? { resource_group_type = var.metadata.resource_group_type } : {}
-  )
+  ) : module.metadata[0].names
 
-  tags = var.naming_conventions_enabled ? merge(module.metadata[0].tags, { "admin" = var.admin.name, "email" = var.admin.email }, var.tags) : merge(var.tags, { "admin" = var.admin.name, "email" = var.admin.email })
+  tags = var.disable_naming_conventions ? merge(var.tags, { "admin" = var.admin.name, "email" = var.admin.email }) : merge(module.metadata[0].tags, { "admin" = var.admin.name, "email" = var.admin.email }, try(var.tags))
 
-  git_repo      = "https://github.com/hpcc-systems/helm-chart.git"
-  chart_prefix  = var.hpcc_helm.chart == null || var.hpcc_helm.chart == "" ? "${path.root}/helm-chart" : var.hpcc_helm.chart
-  hpcc_chart    = "${local.chart_prefix}/helm/hpcc"
-  storage_chart = "${local.chart_prefix}/helm/examples/azure/hpcc-azurefile"
-  elk_chart     = "${local.chart_prefix}/helm/managed/logging/elastic"
-  version       = var.charts_version != null && var.charts_version != "" ? var.charts_version : regex("[(\\d)*].[(\\d)*].[(\\d)*]", var.hpcc_image.version)
+  hpcc_repository    = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-${var.hpcc.version}.tgz"
+  storage_repository = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-azurefile-0.1.0.tgz"
 
-  custom_data = templatefile(!local.is_windows_os ? "${path.module}/bash.tpl" : "${path.module}/batch.tpl", { version = local.version, repository = local.git_repo })
+  hpcc_chart    = var.hpcc.chart != "" && var.hpcc.chart != null ? var.hpcc.chart : local.hpcc_repository
+  storage_chart = var.storage.chart != "" && var.storage.chart != null ? var.storage.chart : local.storage_repository
+  elk_chart     = var.elk.chart != "" && var.elk.chart != null ? var.elk.chart : "hpcc/elastic4hpcclogs"
 
-  kubectl_command = "kubectl apply -f ${path.root}/eclwatch-ingress.yaml"
-  az_command      = "az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name} --overwrite"
+  kubectl_command = "kubectl apply -f ${path.root}/values/eclwatch-ingress.yaml"
+  az_command      = "az aks get-credentials --name ${module.kubernetes[0].name} --resource-group ${module.resource_group.name} --overwrite"
 
+  is_custom     = var.image_root != "hpccsystems" && var.image_root != "" && var.image_root != null ? true : false
   is_windows_os = substr(pathexpand("~"), 0, 1) == "/" ? false : true
 }

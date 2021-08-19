@@ -3,7 +3,7 @@ admin = {
   email = "hpccdemo@example.com"
 }
 
-naming_conventions_enabled = true # true will enforce all metadata inputs below
+enable_naming_conventions = true # true will enforce all metadata inputs below
 
 metadata = {
   project             = "hpccdemo"
@@ -36,36 +36,51 @@ additional_node_pool = {
   max_count           = 3
 }
 
-hpcc_image = {
-  version = "8.2.4-rc1"
-  name    = "platform-core"
-  root    = "hpccsystems"
-}
-
-hpcc_helm = {
+hpcc = {
+  version   = "8.2.12-rc1"
   chart     = ""
   namespace = "default"
   name      = "myhpcck8s"
+  chart     = null
   values    = ["example.yaml"]
 }
 
-hpcc_elk = {
-  enabled = true
-  name    = "myhpccelk"
-  values  = null
+elk = {
+  enable = true
+  name   = "myhpccelk"
+  chart  = null
+  values = null
 }
 
 # Optional Attributes
 # -------------------
+# image_root - Root of the image other than hpccsystems
+# Example: image_root = "foo"
 
-# charts_version - The version of the charts if a custom image version is being used.
-# Example: charts_version = "8.2.8"
+# image_name - Name of the image other than platform-core
+# Example: image_name = "bar"
 
-# auto_connect - Automatically connect to the kubernetes cluster from the host machine
+# auto_connect - Automatically connect to the kubernetes cluster from the host machine.
 # Example: auto_connect = true 
 
-# hpcc_storage - additional values.yaml for storage deployment
+# disable_helm - Disable Helm deployments by Terraform.
+# Example: disable_helm = false 
+
+# disable_kubernetes - Gracefully shut the Kubernetes cluster down. terraform apply -var-file=admin.tfvars is needed afterwards.
+# Example: disable_kubernetes = true 
+
+# enable_nginx - Enable NGINX for ECLWatch
+# Example: enable_nginx = true  
+
+# storage - Additional values.yaml for storage deployment.
 # Example: 
-# hpcc_storage = {
-#   values = ["example.yaml"]
+# storage = {
+#   disable_storage_account = false
+#   access_tier             = "Hot"
+#   account_kind            = "StorageV2"
+#   account_tier            = "Premium"
+#   chart                   = null
+#   enable_large_file_share = "false"
+#   replication_type        = "LRS"
+#   values                  = []
 # }

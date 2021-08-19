@@ -12,10 +12,28 @@ variable "auto_connect" {
   default     = false
 }
 
-variable "naming_conventions_enabled" {
+variable "disable_helm" {
+  description = "Disable Helm deployments by Terraform."
+  type        = bool
+  default     = false
+}
+
+variable "disable_kubernetes" {
+  description = "Gracefully shut the Kubernetes cluster down."
+  type        = bool
+  default     = false
+}
+
+variable "disable_naming_conventions" {
   description = "Naming convention module."
   type        = bool
-  default     = true
+  default     = false
+}
+
+variable "enable_nginx" {
+  description = "Enable NGINX ingress controler."
+  type        = bool
+  default     = false
 }
 
 variable "metadata" {
@@ -92,34 +110,32 @@ variable "additional_node_pool" {
   }
 }
 
-variable "hpcc_image" {
-  description = "HPCC image variables."
-  type = object({
-    version = string
-    root    = string
-    name    = string
-  })
-
-  default = {
-    name    = "platform-core"
-    root    = "hpccsystems"
-    version = "latest"
-  }
-}
-
-variable "charts_version" {
-  description = "The version of the charts."
+variable "image_root" {
+  description = "Root of the image other than hpccsystems."
   type        = string
   default     = null
 }
 
-variable "hpcc_helm" {
-  description = "HPCC helm chart variables."
+variable "image_name" {
+  description = "Root of the image other than hpccsystems."
+  type        = string
+  default     = null
+}
+
+variable "image_version" {
+  description = "Root of the image other than hpccsystems."
+  type        = string
+  default     = null
+}
+
+variable "hpcc" {
+  description = "HPCC Helm chart variables."
   type = object({
     chart     = string
     namespace = string
     name      = string
     values    = list(string)
+    version   = string
   })
 
   default = {
@@ -127,30 +143,50 @@ variable "hpcc_helm" {
     name      = "myhpcck8s"
     namespace = "default"
     values    = []
+    version   = null
   }
 }
 
-variable "hpcc_storage" {
-  description = "HPCC helm chart variables."
+variable "storage" {
+  description = "HPCC Helm chart variables."
   type = object({
+    disable_storage_account = bool
+    account_kind            = string
+    replication_type        = string
+    account_tier            = string
+    access_tier             = string
+    chart                   = string
+    enable_large_file_share = bool
+    enable_static_website   = bool
+    values                  = list(string)
+  })
+
+  default = {
+    access_tier             = "Hot"
+    account_kind            = "StorageV2"
+    account_tier            = "Premium"
+    chart                   = null
+    disable_storage_account = true
+    enable_large_file_share = false
+    enable_static_website   = true
+    replication_type        = "LRS"
+    values                  = []
+  }
+}
+
+variable "elk" {
+  description = "HPCC Helm chart variables."
+  type = object({
+    enable = bool
+    name   = string
+    chart  = string
     values = list(string)
   })
+
   default = {
+    enable = true
+    name   = "myhpccelk"
+    chart  = null
     values = []
-  }
-}
-
-variable "hpcc_elk" {
-  description = "HPCC helm chart variables."
-  type = object({
-    enabled = bool
-    name    = string
-    values  = list(string)
-  })
-
-  default = {
-    enabled = true
-    name    = "myhpccelk"
-    values  = []
   }
 }

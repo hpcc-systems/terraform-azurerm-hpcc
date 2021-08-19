@@ -1,23 +1,3 @@
-provider "azurerm" {
-  features {}
-}
-
-provider "kubernetes" {
-  host                   = module.kubernetes.kube_config.host
-  client_certificate     = base64decode(module.kubernetes.kube_config.client_certificate)
-  client_key             = base64decode(module.kubernetes.kube_config.client_key)
-  cluster_ca_certificate = base64decode(module.kubernetes.kube_config.cluster_ca_certificate)
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = module.kubernetes.kube_config.host
-    client_certificate     = base64decode(module.kubernetes.kube_config.client_certificate)
-    client_key             = base64decode(module.kubernetes.kube_config.client_key)
-    cluster_ca_certificate = base64decode(module.kubernetes.kube_config.cluster_ca_certificate)
-  }
-}
-
 data "http" "my_ip" {
   url = "http://ipv4.icanhazip.com"
 }
@@ -45,13 +25,14 @@ module "subscription" {
 module "naming" {
   source = "github.com/Azure-Terraform/example-naming-template.git?ref=v1.0.0"
 
-  count = var.naming_conventions_enabled ? 1 : 0
+  count = var.disable_naming_conventions ? 0 : 1
 }
 
 module "metadata" {
   source = "github.com/Azure-Terraform/terraform-azurerm-metadata.git?ref=v1.5.1"
 
-  count        = var.naming_conventions_enabled ? 1 : 0
+  count = var.disable_naming_conventions ? 0 : 1
+
   naming_rules = module.naming[0].yaml
 
   market              = var.metadata.market
@@ -79,7 +60,7 @@ module "resource_group" {
 module "virtual_network" {
   source = "github.com/Azure-Terraform/terraform-azurerm-virtual-network.git?ref=v2.9.0"
 
-  naming_rules = var.naming_conventions_enabled ? module.naming[0].yaml : ""
+  naming_rules = var.disable_naming_conventions ? "" : module.naming[0].yaml
 
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
@@ -119,8 +100,9 @@ module "virtual_network" {
 }
 
 module "kubernetes" {
-  # source = "github.com/Azure-Terraform/terraform-azurerm-kubernetes.git?ref=v4.2.0"
   source = "github.com/Azure-Terraform/terraform-azurerm-kubernetes.git?ref=v4.2.1"
+
+  count = var.disable_kubernetes ? 0 : 1
 
   cluster_name        = "${local.names.resource_group_type}-${local.names.product_name}-terraform-${local.names.location}-${var.admin.name}"
   location            = var.resource_group.location
@@ -170,71 +152,100 @@ module "kubernetes" {
 
 }
 
-resource "null_resource" "helm_chart_clone" {
-  count = length(var.hpcc_helm.chart) == 0 && var.hpcc_helm.chart == null ? 1 : 0
-
-  provisioner "local-exec" {
-    command     = local.custom_data
-    interpreter = !local.is_windows_os ? ["/bin/bash", "-c"] : ["PowerShell", "-Command"]
-  }
-}
-
 resource "helm_release" "hpcc" {
-  name      = var.hpcc_helm.name
-  namespace = var.hpcc_helm.namespace
-  chart     = local.hpcc_chart
-  values = var.hpcc_helm.values == null ? null : concat([file("${path.root}/esp.yaml")],
-    [file("${path.root}/helm-chart/helm/examples/azure/values-retained-azurefile.yaml")],
-  [for v in var.hpcc_helm.values : file(v)])
-  dependency_update = false
-  create_namespace  = true
+  # count = var.disable_helm ? 0 : var.image_root != "" && var.image_root != null ? 1 : 0
+  count = var.disable_helm ? 0 : 1
 
-  set {
-    name  = "global.image.root"
-    value = var.hpcc_image.root
+  name             = var.hpcc.name
+  namespace        = var.hpcc.namespace
+  chart            = local.hpcc_chart
+  create_namespace = true
+  values = var.hpcc.values == null ? null : concat([file("${path.root}/values/esp.yaml")],
+    [file("${path.root}/values/values-retained-azurefile.yaml")],
+  [for v in var.hpcc.values : file(v)])
+
+  dynamic "set" {
+    for_each = local.is_custom ? [1] : []
+    content {
+      name  = "global.image.root"
+      value = var.image_root
+    }
   }
 
-  set {
-    name  = "global.image.name"
-    value = var.hpcc_image.name
+  dynamic "set" {
+    for_each = local.is_custom ? [1] : []
+    content {
+      name  = "global.image.name"
+      value = var.image_name
+    }
+  }
+  dynamic "set" {
+    for_each = local.is_custom ? [1] : []
+    content {
+      name  = "global.image.version"
+      value = var.image_version
+    }
+
   }
 
-  set {
-    name  = "global.image.version"
-    value = var.hpcc_image.version
-  }
-
-  timeout    = 1000
-  depends_on = [null_resource.helm_chart_clone, helm_release.storage]
+  dependency_update = true
+  timeout           = 1000
+  depends_on        = [helm_release.storage]
 }
 
 resource "helm_release" "storage" {
+  count = var.disable_helm ? 0 : 1
+
   name             = "azstorage"
-  namespace        = var.hpcc_helm.namespace
+  namespace        = var.hpcc.namespace
   chart            = local.storage_chart
-  values           = var.hpcc_storage.values == null ? null : [for v in var.hpcc_storage.values : file(v)]
+  values           = var.storage.values == null ? null : [for v in var.storage.values : file(v)]
   create_namespace = true
 
-  timeout    = 600
-  depends_on = [null_resource.helm_chart_clone]
+  timeout = 600
 }
 
 resource "helm_release" "elk" {
-  count = var.hpcc_elk.enabled ? 1 : 0
+  count = var.disable_helm || !var.elk.enable ? 0 : 1
 
-  name              = var.hpcc_elk.name
-  namespace         = var.hpcc_helm.namespace
-  chart             = local.elk_chart
-  values            = var.hpcc_elk.values == null ? null : [for v in var.hpcc_elk.values : file(v)]
-  dependency_update = true
-  create_namespace  = true
+  name             = var.elk.name
+  namespace        = var.hpcc.namespace
+  chart            = local.elk_chart
+  values           = var.elk.values == null ? null : [for v in var.elk.values : file(v)]
+  create_namespace = true
 
   timeout    = 600
-  depends_on = [null_resource.helm_chart_clone, helm_release.hpcc]
+  depends_on = [helm_release.hpcc]
 }
 
-resource "azurerm_network_security_rule" "ingress-nginx" {
-  name                        = "Allow_ECLWatch_Ingress"
+module "storage_account" {
+  source = "github.com/Azure-Terraform/terraform-azurerm-storage-account.git?ref=v0.6.0"
+
+  count = var.storage.disable_storage_account ? 0 : 1
+
+  resource_group_name = module.resource_group.name
+  location            = module.resource_group.location
+  names               = local.names
+  tags                = local.tags
+
+  account_kind            = var.storage.account_kind
+  replication_type        = var.storage.replication_type
+  account_tier            = var.storage.account_tier
+  access_tier             = var.storage.access_tier
+  enable_large_file_share = var.storage.enable_large_file_share
+  enable_static_website   = var.storage.enable_static_website
+
+  access_list = {
+    "my_ip" = chomp(data.http.my_ip.body)
+  }
+
+  service_endpoints = {
+    "iaas-public" = module.virtual_network.subnet["iaas-public"].id
+  }
+}
+
+resource "azurerm_network_security_rule" "ingress-internet" {
+  name                        = "Allow_Internet_Ingress"
   priority                    = 100
   direction                   = "Inbound"
   access                      = "Allow"
@@ -245,27 +256,33 @@ resource "azurerm_network_security_rule" "ingress-nginx" {
   destination_address_prefix  = "*"
   resource_group_name         = module.virtual_network.subnets["iaas-public"].resource_group_name
   network_security_group_name = module.virtual_network.subnets["iaas-public"].network_security_group_name
+
+  depends_on = [helm_release.ingress-nginx[0]]
 }
 
 resource "helm_release" "ingress-nginx" {
+  count = var.enable_nginx ? 1 : 0
+
   name       = "ingress-nginx"
   chart      = "ingress-nginx"
   repository = "https://kubernetes.github.io/ingress-nginx"
 
-  depends_on = [module.kubernetes]
+  depends_on = [module.kubernetes[0]]
 }
 
 resource "null_resource" "kubectl" {
+  count = var.enable_nginx ? 1 : 0
+
   provisioner "local-exec" {
-    command     = local.is_windows_os ? "${local.kubectl_command} --kubeconfig <(echo $KUBECONFIG | openssl base64 -d)" : "${local.kubectl_command} --kubeconfig <(echo $KUBECONFIG | base64 --decode)"
-    interpreter = !local.is_windows_os ? ["/bin/bash", "-c"] : ["PowerShell", "-Command"]
+    command     = local.is_windows_os ? "${local.az_command} & ${local.kubectl_command}" : "${local.kubectl_command} --kubeconfig <(echo $KUBECONFIG | base64 --decode)"
+    interpreter = local.is_windows_os ? ["PowerShell", "-Command"] : ["/bin/bash", "-c"]
 
     environment = {
-      KUBECONFIG = base64encode(module.kubernetes.kube_config_raw)
+      KUBECONFIG = base64encode(module.kubernetes[0].kube_config_raw)
     }
   }
 
-  depends_on = [helm_release.ingress-nginx]
+  depends_on = [helm_release.ingress-nginx[0]]
 }
 
 resource "null_resource" "az" {
@@ -273,14 +290,14 @@ resource "null_resource" "az" {
 
   provisioner "local-exec" {
     command     = local.az_command
-    interpreter = !local.is_windows_os ? ["/bin/bash", "-c"] : ["PowerShell", "-Command"]
+    interpreter = local.is_windows_os ? ["PowerShell", "-Command"] : ["/bin/bash", "-c"]
   }
 
-  depends_on = [module.kubernetes]
+  depends_on = [module.kubernetes[0]]
 }
 
 output "aks_login" {
-  value = "az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name}"
+  value = "az aks get-credentials --name ${module.kubernetes[0].name} --resource-group ${module.resource_group.name}"
 }
 
 output "advisor_recommendations" {
