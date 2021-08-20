@@ -164,7 +164,7 @@ resource "helm_release" "hpcc" {
   [for v in var.hpcc.values : file(v)] : [], [file("${path.root}/values/values-retained-azurefile.yaml")])
 
   dynamic "set" {
-    for_each = local.is_custom ? [1] : []
+    for_each = var.image_root != "" && var.image_root != null && var.image_root != "hpccsystems" ? [1] : []
     content {
       name  = "global.image.root"
       value = var.image_root
@@ -172,14 +172,15 @@ resource "helm_release" "hpcc" {
   }
 
   dynamic "set" {
-    for_each = local.is_custom ? [1] : []
+    for_each = var.image_name != "" && var.image_name != null && var.image_name != "platform-core" ? [1] : []
     content {
       name  = "global.image.name"
       value = var.image_name
     }
   }
+
   dynamic "set" {
-    for_each = local.is_custom ? [1] : []
+    for_each = var.image_version != "" && var.image_version != null ? [1] : []
     content {
       name  = "global.image.version"
       value = var.image_version
@@ -201,7 +202,8 @@ resource "helm_release" "storage" {
   values           = var.storage.values == null ? null : [for v in var.storage.values : file(v)]
   create_namespace = true
 
-  timeout = 600
+  timeout           = 600
+  dependency_update = true
 }
 
 resource "helm_release" "elk" {
@@ -213,8 +215,9 @@ resource "helm_release" "elk" {
   values           = concat(var.elk.values != null && var.elk.values != "" ? [for v in var.elk.values : file(v)] : [], var.expose_services ? [file("${path.root}/values/elk.yaml")] : [])
   create_namespace = true
 
-  timeout    = 600
-  depends_on = [helm_release.hpcc]
+  timeout           = 600
+  dependency_update = true
+  depends_on        = [helm_release.hpcc]
 }
 
 module "storage_account" {

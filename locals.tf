@@ -24,6 +24,5 @@ locals {
 
   az_command = "az aks get-credentials --name ${module.kubernetes[0].name} --resource-group ${module.resource_group.name} --overwrite"
 
-  is_custom     = var.image_root != "hpccsystems" && var.image_root != "" && var.image_root != null ? true : false
   is_windows_os = substr(pathexpand("~"), 0, 1) == "/" ? false : true
 }
