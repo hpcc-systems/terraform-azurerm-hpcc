@@ -24,13 +24,6 @@ This module will deploy an HPCC AKS cluster using other abstracted modules.
 ## Inputs
 <br />
 
-### Glossary
-|||
-|:--------:|------|
-| Required | Cannot be commented out, but can be set to "" or null.|
-|-| No default value |
-<br />
-
 ### Admin
 This block contains information on the user who is deploying the cluster. This is used as tags and part of some resources’ names to identify who deployed a given resource and how to contact that user. This block is required.
 
@@ -42,15 +35,15 @@ This block contains information on the user who is deploying the cluster. This i
 <br />
 
 ### Disable Naming Conventions
-When set to true, this attribute drops the naming conventions set forth by the python module. This block is optional.
+When set to `true`, this attribute drops the naming conventions set forth by the python module. This block is optional.
 
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| disable_naming_conventions | Disable naming conventions. | bool | false | no |
+| disable_naming_conventions | Disable naming conventions. | bool | `false` | no |
 <br />
 
 ### Metadata
-TThe arguments in this block are used as tags and part of resources’ names. This block can be omitted when disable_naming_conventions is set to true.
+TThe arguments in this block are used as tags and part of resources’ names. This block can be omitted when disable_naming_conventions is set to `true`.
 
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
@@ -78,7 +71,7 @@ This block creates a resource group (like a folder) for your resources. This blo
 
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| unique_name | Will concatenate a number at the end of your resource group name. | bool | true | yes |
+| unique_name | Will concatenate a number at the end of your resource group name. | bool | `true` | yes |
 | location | Cloud region in which to deploy the cluster resources. | string | null | yes |
 <br />
 
@@ -87,7 +80,7 @@ This block solely shuts the Kubernetes cluster down. This block is optional.
 
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| disable_kubernetes | Shut Kubernetes cluster down. `terraform apply -var-file=admin.tfvars` is needed afterwards. | bool | false | no |
+| disable_kubernetes | Shut Kubernetes cluster down. `terraform apply -var-file=admin.tfvars` is needed afterwards. | bool | `false` | no |
 <br />
 
 ### System Node Pool
@@ -105,7 +98,7 @@ This block creates additional node pools. This block is optional.
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
 | vm_size | Size of VM to use. | string | Standard_D2s_v3 | yes |
-| enable_auto_scalling | Enable auto-scalling | bool | true | yes |
+| enable_auto_scalling | Enable auto-scalling | bool | `true` | yes |
 | min_count | Minimum number of nodes to use | number | 0 | yes |
 | max_count | Maximum number of nodes to use. | number | 0 | yes |
 <br />
@@ -131,7 +124,7 @@ This block disable helm deployments by Terraform. This block is optional and wil
 
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| disable_helm | Disable Helm deployments by Terraform. | bool | false | no |
+| disable_helm | Disable Helm deployments by Terraform. | bool | `false` | no |
 <br />
 
 
@@ -155,9 +148,9 @@ This block deploys the HPCC persistent volumes. This block is optional.
 | access_tier | Defines the access tier for `BlobStorage`, `FileStorage`, `Storage2` accounts. | string | Hot | `Cool`, `Hot` | yes |
 | account_kind | Defines the Kind of account. Changing this will destroy your data. | string | `StorageV2` | `BlobStorage`. `BlockBlobStorage`, `FileStorage`, `Storage`, `StorageV2` | yes |
 | account_tier | Defines the Tier to use for this storage account. Changing this will destroy your data. | string | `Premium` | `Standard`, `Premium` | yes |
-| disable_storage_account | Stop Terraform from creating a storage account. Persistent volumes will still be created. | bool | false | false, true | yes |
-| enable_large_file_share | Enable Large File Share. | bool | false | `false`, `true` | yes |
-| enable_static_website | Enable Static Website | bool | false | can only be set to `true` when the `account_kind` is set to `StorageV2` or `BlockBlobStorage` | yes |
+| disable_storage_account | Stop Terraform from creating a storage account. Persistent volumes will still be created. | bool | `false` | `false`, `true` | yes |
+| enable_large_file_share | Enable Large File Share. | bool | `false` | `false`, `true` | yes |
+| enable_static_website | Enable Static Website | bool | `false` | can only be set to `true` when the `account_kind` is set to `StorageV2` or `BlockBlobStorage` | yes |
 | replication_type | Defines the type of replication to use for this storage account. Changing this will destroy your data. | string | `LRS` | `LRS`, `GRS`, `RAGRS`, `ZRS`, `GZRS`, `RAGZRS` | yes |
 | values | List of desired state files to use similar to -f in CLI. | list(string) | [] | no |
 <br />
@@ -167,17 +160,9 @@ This block deploys the ELK chart. This block is optional.
 
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| enable | Enable ELK | bool | true | yes |
+| enable | Enable ELK | bool | `true` | yes |
 | name | name | Release name of the chart. | string | myhpccelk | yes |
 | values | List of desired state files to use similar to -f in CLI. | list(string) | - | yes |
-<br />
-
-### Enable NGINX for ECLWatch
-This block enables NGINX ingress for the ECLWatch service.
-
- Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:-----:|
-| enable_nginx | Enable NGINX ingress for ECLWatch service. | bool | false | no |
 <br />
 
 ### Auto Connect to Kubernetes Cluster
@@ -185,7 +170,15 @@ This block automatically connect your cluster to your local machine similarly to
 
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| auto_connect | Automatically connect to the Kubernetes cluster from the host machine by overwriting the current context. | bool | false | no |
+| auto_connect | Automatically connect to the Kubernetes cluster from the host machine by overwriting the current context. | bool | `false` | no |
+<br />
+
+### Expose ECLWatch and ELK to the Internet
+Expose ECLWatch and ELK to the internet. This is unsafe and may not be supported by your organization. Setting this to `true` can cause eclwatch service to stick in a pending state.
+
+ Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:-----:|
+| expose_services | Expose ECLWatch and ELK to the internet. | bool | `false` | no |
 <br />
 
 ## Abstracted Modules

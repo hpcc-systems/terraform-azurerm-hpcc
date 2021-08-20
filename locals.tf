@@ -16,13 +16,13 @@ locals {
 
   hpcc_repository    = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-${var.hpcc.version}.tgz"
   storage_repository = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-azurefile-0.1.0.tgz"
+  elk_repository     = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/elastic4hpcclogs-1.0.0.tgz"
 
   hpcc_chart    = var.hpcc.chart != "" && var.hpcc.chart != null ? var.hpcc.chart : local.hpcc_repository
   storage_chart = var.storage.chart != "" && var.storage.chart != null ? var.storage.chart : local.storage_repository
-  elk_chart     = var.elk.chart != "" && var.elk.chart != null ? var.elk.chart : "hpcc/elastic4hpcclogs"
+  elk_chart     = var.elk.chart != "" && var.elk.chart != null ? var.elk.chart : local.elk_repository
 
-  kubectl_command = "kubectl apply -f ${path.root}/values/eclwatch-ingress.yaml"
-  az_command      = "az aks get-credentials --name ${module.kubernetes[0].name} --resource-group ${module.resource_group.name} --overwrite"
+  az_command = "az aks get-credentials --name ${module.kubernetes[0].name} --resource-group ${module.resource_group.name} --overwrite"
 
   is_custom     = var.image_root != "hpccsystems" && var.image_root != "" && var.image_root != null ? true : false
   is_windows_os = substr(pathexpand("~"), 0, 1) == "/" ? false : true

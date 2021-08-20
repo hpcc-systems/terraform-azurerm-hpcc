@@ -160,9 +160,8 @@ resource "helm_release" "hpcc" {
   namespace        = var.hpcc.namespace
   chart            = local.hpcc_chart
   create_namespace = true
-  values = var.hpcc.values == null ? null : concat([file("${path.root}/values/esp.yaml")],
-    [file("${path.root}/values/values-retained-azurefile.yaml")],
-  [for v in var.hpcc.values : file(v)])
+  values = concat(var.expose_services ? [file("${path.root}/values/esp.yaml")] : [], var.hpcc.values != null && var.hpcc.values != "" ?
+  [for v in var.hpcc.values : file(v)] : [], [file("${path.root}/values/values-retained-azurefile.yaml")])
 
   dynamic "set" {
     for_each = local.is_custom ? [1] : []
@@ -211,7 +210,7 @@ resource "helm_release" "elk" {
   name             = var.elk.name
   namespace        = var.hpcc.namespace
   chart            = local.elk_chart
-  values           = var.elk.values == null ? null : [for v in var.elk.values : file(v)]
+  values           = concat(var.elk.values != null && var.elk.values != "" ? [for v in var.elk.values : file(v)] : [], var.expose_services ? [file("${path.root}/values/elk.yaml")] : [])
   create_namespace = true
 
   timeout    = 600
@@ -245,45 +244,21 @@ module "storage_account" {
 }
 
 resource "azurerm_network_security_rule" "ingress-internet" {
+  count = var.expose_services ? 1 : 0
+
   name                        = "Allow_Internet_Ingress"
   priority                    = 100
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "tcp"
   source_port_range           = "*"
-  destination_port_ranges     = ["80", "8010"]
+  destination_port_ranges     = ["8010", "5601"]
   source_address_prefix       = "Internet"
   destination_address_prefix  = "*"
   resource_group_name         = module.virtual_network.subnets["iaas-public"].resource_group_name
   network_security_group_name = module.virtual_network.subnets["iaas-public"].network_security_group_name
-
-  depends_on = [helm_release.ingress-nginx[0]]
 }
 
-resource "helm_release" "ingress-nginx" {
-  count = var.enable_nginx ? 1 : 0
-
-  name       = "ingress-nginx"
-  chart      = "ingress-nginx"
-  repository = "https://kubernetes.github.io/ingress-nginx"
-
-  depends_on = [module.kubernetes[0]]
-}
-
-resource "null_resource" "kubectl" {
-  count = var.enable_nginx ? 1 : 0
-
-  provisioner "local-exec" {
-    command     = local.is_windows_os ? "${local.az_command} & ${local.kubectl_command}" : "${local.kubectl_command} --kubeconfig <(echo $KUBECONFIG | base64 --decode)"
-    interpreter = local.is_windows_os ? ["PowerShell", "-Command"] : ["/bin/bash", "-c"]
-
-    environment = {
-      KUBECONFIG = base64encode(module.kubernetes[0].kube_config_raw)
-    }
-  }
-
-  depends_on = [helm_release.ingress-nginx[0]]
-}
 
 resource "null_resource" "az" {
   count = var.auto_connect ? 1 : 0

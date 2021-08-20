@@ -3,8 +3,6 @@ admin = {
   email = "hpccdemo@example.com"
 }
 
-disable_naming_conventions = true # true will enforce all metadata inputs below
-
 metadata = {
   project             = "hpccdemo"
   product_name        = "contosoweb"
@@ -41,7 +39,7 @@ hpcc = {
   namespace = "default"
   name      = "myhpcck8s"
   chart     = null
-  values    = ["example.yaml"]
+  values    = []
 }
 
 elk = {
@@ -53,6 +51,10 @@ elk = {
 
 # Optional Attributes
 # -------------------
+# expose_services - Expose ECLWatch and ELK to the internet. This can be unsafe and may not be supported by your organization. 
+# Setting this to true can cause eclwatch service to stick in a pending state. Only use this if you know what you are doing.
+# Example: expose_services = true
+
 # image_root - Root of the image other than hpccsystems
 # Example: image_root = "foo"
 
@@ -62,14 +64,14 @@ elk = {
 # auto_connect - Automatically connect to the kubernetes cluster from the host machine.
 # Example: auto_connect = true 
 
-# disable_helm - Disable Helm deployments by Terraform.
+# disable_helm - Disable Helm deployments by Terraform. This is reserved for experimentation with other deployment tools like Flux2.
 # Example: disable_helm = false 
 
 # disable_kubernetes - Gracefully shut the Kubernetes cluster down. terraform apply -var-file=admin.tfvars is needed afterwards.
 # Example: disable_kubernetes = true 
 
-# enable_nginx - Enable NGINX for ECLWatch
-# Example: enable_nginx = true  
+# disable_naming_conventions - Disable naming conventions
+# Example: disable_naming_conventions = true 
 
 # storage - Settings for the storage account.
 # Example: 

@@ -6,6 +6,12 @@ variable "admin" {
   })
 }
 
+variable "expose_services" {
+  description = "Expose ECLWatch and ELK to the Internet. This is not secure. Please consider before using it."
+  type        = bool
+  default     = false
+}
+
 variable "auto_connect" {
   description = "Automatically connect to the Kubernetes cluster from the host machine by overwriting the current context."
   type        = bool
@@ -26,12 +32,6 @@ variable "disable_kubernetes" {
 
 variable "disable_naming_conventions" {
   description = "Naming convention module."
-  type        = bool
-  default     = false
-}
-
-variable "enable_nginx" {
-  description = "Enable NGINX ingress controler."
   type        = bool
   default     = false
 }
