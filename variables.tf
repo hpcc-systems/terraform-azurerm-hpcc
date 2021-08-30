@@ -24,14 +24,14 @@ variable "disable_helm" {
   default     = false
 }
 
-variable "disable_kubernetes" {
-  description = "Gracefully shut the Kubernetes cluster down."
+variable "disable_naming_conventions" {
+  description = "Naming convention module."
   type        = bool
   default     = false
 }
 
-variable "disable_naming_conventions" {
-  description = "Naming convention module."
+variable "delete_aks" {
+  description = "Delete Kubernetes cluster."
   type        = bool
   default     = false
 }
@@ -85,29 +85,10 @@ variable "resource_group" {
   }
 }
 
-variable "system_node_pool" {
-  description = "Kubernetes system node pool variables."
-  type = object({
-    vm_size    = string
-    node_count = number
-  })
-}
-
-variable "additional_node_pool" {
-  description = "Kubernetes user node pool variables."
-  type = object({
-    vm_size             = string
-    enable_auto_scaling = bool
-    min_count           = number
-    max_count           = number
-  })
-
-  default = {
-    enable_auto_scaling = true
-    max_count           = 0
-    min_count           = 0
-    vm_size             = ""
-  }
+variable "node_pools" {
+  description = "node pools"
+  type        = any # top level keys are node pool names, sub-keys are subset of node_pool_defaults keys
+  default     = { default = {} }
 }
 
 variable "image_root" {
@@ -148,30 +129,15 @@ variable "hpcc" {
 }
 
 variable "storage" {
-  description = "HPCC Helm chart variables."
-  type = object({
-    disable_storage_account = bool
-    account_kind            = string
-    replication_type        = string
-    account_tier            = string
-    access_tier             = string
-    chart                   = string
-    enable_large_file_share = bool
-    enable_static_website   = bool
-    values                  = list(string)
-  })
+  description = "Storage account arguments."
+  type        = any
+  default     = { default = {} }
+}
 
-  default = {
-    access_tier             = "Hot"
-    account_kind            = "StorageV2"
-    account_tier            = "Premium"
-    chart                   = null
-    disable_storage_account = true
-    enable_large_file_share = false
-    enable_static_website   = true
-    replication_type        = "LRS"
-    values                  = []
-  }
+variable "existing_storage" {
+  description = "Existing storage account metadata."
+  type        = any
+  default     = { default = {} }
 }
 
 variable "elk" {

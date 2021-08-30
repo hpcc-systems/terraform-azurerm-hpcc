@@ -25,7 +25,7 @@ This module will deploy an HPCC AKS cluster using other abstracted modules.
 <br />
 
 ### Admin
-This block contains information on the user who is deploying the cluster. This is used as tags and part of some resources’ names to identify who deployed a given resource and how to contact that user. This block is required.
+This block contains information on the user who is deploying the cluster. This is used as tags and part of some resource names to identify who deployed a given resource and how to contact that user. This block is required.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
@@ -35,7 +35,7 @@ This block contains information on the user who is deploying the cluster. This i
 <br />
 
 ### Disable Naming Conventions
-When set to `true`, this attribute drops the naming conventions set forth by the python module. This block is optional.
+When set to `true`, this attribute drops the naming conventions set forth by the python module. This attribute is optional.
 
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
@@ -76,11 +76,11 @@ This block creates a resource group (like a folder) for your resources. This blo
 <br />
 
 ### Gracefully Shut Kubernetes Cluster Down (without the storage).
-This block solely shuts the Kubernetes cluster down. This block is optional.
+This block shuts the Kubernetes cluster down and leaves the storage. This block is optional.
 
  Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
-| disable_kubernetes | Shut Kubernetes cluster down. `terraform apply -var-file=admin.tfvars` is needed afterwards. | bool | `false` | no |
+| delete_aks | Shut Kubernetes cluster down. `terraform apply -var-file=admin.tfvars` is needed afterwards. | bool | `false` | no |
 <br />
 
 ### System Node Pool
@@ -141,7 +141,7 @@ This block deploys the HPCC helm chart. This block is optional.
 <br />
 
 ### Storage
-This block deploys the HPCC persistent volumes. This block is optional.
+This block deploys the HPCC persistent volumes. This block is required.
 
  Name | Description | Type | Default | Valid Options | Required |
 |------|-------------|------|---------|--------------|:-----:|
@@ -205,32 +205,31 @@ These are the list of all the abstracted modules.
 
 ## Usage
 <ol>
-<li>Clone this repo: `git clone https://github.com/gfortil/terraform-azurerm-hpcc-aks.git`.</li>
-<li>Linux and MacOS</li>
-<ol>
-<li>Change directory to terraform-azurerm-hpcc-aks: `cd terraform-azurerm-hpcc-aks`</li>
-<li>Copy examples/admin.tfvars to terraform-azurerm-hpcc-aks: `cp examples/admin.tfvars`</li>
-</ol>
-<li>Windows OS</li>
-<ol>
-<li>Change directory to terraform-azurerm-hpcc-aks: `cd terraform-azurerm-hpcc-aks`</li>
-<li>Copy examples/admin.tfvars to terraform-azurerm-hpcc-aks: `copy examples/admin.tfvars`</li>
-</ol>
-<li>Open `terraform-azurerm-hpcc-aks/admin.tfvars` file.</li>
-<li>Set attributes to your preferred values.</li>
-<li>Save `terraform-azurerm-hpcc-aks/admin.tfvars` file.</li>
-<li>Run `terraform init`. This step is only required before your first `terraform apply`.</li>
-<li>Run `terraform apply -var-file=admin.tfvars` or `terraform apply -var-file=admin.tfvars -auto-approve`.</li>
-<li>Type `yes` if you didn't pass the flag `-auto-approve`.</li>
-<li>If `auto_connect = true` (in admin.tfvars), skip this step.</li>
-<ol>
-<li>Copy aks_login command.</li>
-<li>Run aks_login in your command line.</li>
-<li>Accept to overwrite your current context.</li>
-</ol>
-<li>List pods: `kubectl get pods`.</li>
-<li>Get ECLWatch external IP: `kubectl get svc --field-selector metadata.name=eclwatch | awk 'NR==2 {print $4}'`.</li>
-<li>Delete cluster: `terraform destroy -var-file=admin.tfvars` or `terraform destroy -var-file=admin.tfvars -auto-approve`.</li>
-<li>Type: `yes` if flag `-auto-approve` was not set.</li>
-</ol>
+    <li>Clone this repo: `git clone https://github.com/gfortil/terraform-azurerm-hpcc-aks.git`.</li>
+    <li>Linux and MacOS</li>
+    <ol>
+        <li>Change directory to terraform-azurerm-hpcc-aks: `cd terraform-azurerm-hpcc-aks`</li>
+        <li>Copy examples/admin.tfvars to terraform-azurerm-hpcc-aks: `cp examples/admin.tfvars`</li>
+    </ol>
+    <li>Windows OS</li>
+    <ol>
+        <li>Change directory to terraform-azurerm-hpcc-aks: `cd terraform-azurerm-hpcc-aks`</li>
+        <li>Copy examples/admin.tfvars to terraform-azurerm-hpcc-aks: `copy examples/admin.tfvars`</li>
+    </ol>
+    <li>Open `terraform-azurerm-hpcc-aks/admin.tfvars` file.</li>
+    <li>Set attributes to your preferred values.</li>
+    <li>Save `terraform-azurerm-hpcc-aks/admin.tfvars` file.</li>
+    <li>Run `terraform init`. This step is only required before your first `terraform apply`.</li>
+    <li>Run `terraform apply -var-file=admin.tfvars` or `terraform apply -var-file=admin.tfvars -auto-approve`.</li>
+    <li>Type `yes` if you didn't pass the flag `-auto-approve`.</li>
+    <li>If `auto_connect = true` (in admin.tfvars), skip this step.</li>
+    <ol>
+        <li>Copy aks_login command.</li>
+        <li>Run aks_login in your command line.</li>
+        <li>Accept to overwrite your current context.</li>
+    </ol>
+    <li>List pods: `kubectl get pods`.</li>
+    <li>Get ECLWatch external IP: `kubectl get svc --field-selector metadata.name=eclwatch | awk 'NR==2 {print $4}'`.</li>
+    <li>Delete cluster: `terraform destroy -var-file=admin.tfvars` or `terraform destroy -var-file=admin.tfvars -auto-approve`.</li>
+    <li>Type: `yes` if flag `-auto-approve` was not set.</li>
 </ol>

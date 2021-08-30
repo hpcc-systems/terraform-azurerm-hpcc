@@ -1,12 +1,5 @@
-data "http" "my_ip" {
-  url = "http://ipv4.icanhazip.com"
-}
-
-data "azurerm_subscription" "current" {
-}
-
 resource "random_string" "random" {
-  length  = 12
+  length  = 43
   upper   = false
   number  = false
   special = false
@@ -50,6 +43,7 @@ module "metadata" {
 
 module "resource_group" {
   source = "github.com/Azure-Terraform/terraform-azurerm-resource-group.git?ref=v2.0.0"
+  count  = var.delete_aks ? 0 : 1
 
   unique_name = var.resource_group.unique_name
   location    = var.resource_group.location
@@ -62,8 +56,8 @@ module "virtual_network" {
 
   naming_rules = var.disable_naming_conventions ? "" : module.naming[0].yaml
 
-  resource_group_name = module.resource_group.name
-  location            = module.resource_group.location
+  resource_group_name = var.delete_aks ? "" : module.resource_group[0].name
+  location            = var.resource_group.location
   names               = local.names
   tags                = local.tags
 
@@ -74,11 +68,14 @@ module "virtual_network" {
       cidrs                   = ["10.1.0.0/24"]
       route_table_association = "default"
       configure_nsg_rules     = false
+      service_endpoints       = ["Microsoft.Storage"]
     }
     iaas-public = {
-      cidrs                   = ["10.1.1.0/24"]
-      route_table_association = "default"
-      configure_nsg_rules     = false
+      cidrs                                          = ["10.1.1.0/24"]
+      route_table_association                        = "default"
+      configure_nsg_rules                            = false
+      enforce_private_link_endpoint_network_policies = true
+      enforce_private_link_service_network_policies  = true
     }
   }
 
@@ -99,16 +96,28 @@ module "virtual_network" {
   }
 }
 
+resource "azurerm_private_endpoint" "pe" {
+  name                = "sa_endpoint"
+  location            = var.resource_group.location
+  resource_group_name = module.resource_group[0].name
+  subnet_id           = module.virtual_network.subnets["iaas-public"].id
+
+  private_service_connection {
+    name                           = "sa_privateserviceconnection"
+    private_connection_resource_id = can(var.existing_storage.name) ? data.azurerm_storage_account.existing_sa[0].id : module.storage_account.hpccsa.id
+    subresource_names              = ["file"]
+    is_manual_connection           = false
+  }
+}
+
 module "kubernetes" {
   source = "github.com/Azure-Terraform/terraform-azurerm-kubernetes.git?ref=v4.2.1"
-
-  count = var.disable_kubernetes ? 0 : 1
 
   cluster_name        = "${local.names.resource_group_type}-${local.names.product_name}-terraform-${local.names.location}-${var.admin.name}"
   location            = var.resource_group.location
   names               = local.names
   tags                = local.tags
-  resource_group_name = module.resource_group.name
+  resource_group_name = var.delete_aks ? "" : module.resource_group[0].name
 
   identity_type = "UserAssigned" # Allowed values: UserAssigned or SystemAssigned
 
@@ -132,24 +141,23 @@ module "kubernetes" {
     route_table_id = module.virtual_network.route_tables["default"].id
   }
 
-  node_pools = {
-    system = {
-      vm_size                      = var.system_node_pool.vm_size
-      node_count                   = var.system_node_pool.node_count
-      only_critical_addons_enabled = true
-      subnet                       = "private"
-    }
-    linuxweb = {
-      vm_size             = var.additional_node_pool.vm_size
-      enable_auto_scaling = var.additional_node_pool.enable_auto_scaling
-      min_count           = var.additional_node_pool.min_count
-      max_count           = var.additional_node_pool.max_count
-      subnet              = "public"
-    }
+  node_pools = var.node_pools
+
+  default_node_pool = "system" //name of the sub-key, which is the default node pool.
+
+}
+
+resource "kubernetes_secret" "sa_secret" {
+  metadata {
+    name = "azure-secret"
   }
 
-  default_node_pool = "system"
+  data = {
+    "azurestorageaccountname" = can(var.existing_storage.name) ? var.existing_storage.name : module.storage_account.hpccsa.name
+    "azurestorageaccountkey"  = can(var.existing_storage.name) ? data.azurerm_storage_account.existing_sa[0].primary_access_key : module.storage_account.hpccsa.primary_access_key
+  }
 
+  type = "Opaque"
 }
 
 resource "helm_release" "hpcc" {
@@ -164,7 +172,7 @@ resource "helm_release" "hpcc" {
   [for v in var.hpcc.values : file(v)] : [], [file("${path.root}/values/values-retained-azurefile.yaml")])
 
   dynamic "set" {
-    for_each = var.image_root != "" && var.image_root != null && var.image_root != "hpccsystems" ? [1] : []
+    for_each = var.image_root != "" && var.image_root != null ? [1] : []
     content {
       name  = "global.image.root"
       value = var.image_root
@@ -172,7 +180,7 @@ resource "helm_release" "hpcc" {
   }
 
   dynamic "set" {
-    for_each = var.image_name != "" && var.image_name != null && var.image_name != "platform-core" ? [1] : []
+    for_each = var.image_name != "" && var.image_name != null ? [1] : []
     content {
       name  = "global.image.name"
       value = var.image_name
@@ -193,19 +201,6 @@ resource "helm_release" "hpcc" {
   depends_on        = [helm_release.storage]
 }
 
-resource "helm_release" "storage" {
-  count = var.disable_helm ? 0 : 1
-
-  name             = "azstorage"
-  namespace        = var.hpcc.namespace
-  chart            = local.storage_chart
-  values           = var.storage.values == null ? null : [for v in var.storage.values : file(v)]
-  create_namespace = true
-
-  timeout           = 600
-  dependency_update = true
-}
-
 resource "helm_release" "elk" {
   count = var.disable_helm || !var.elk.enable ? 0 : 1
 
@@ -217,36 +212,37 @@ resource "helm_release" "elk" {
 
   timeout           = 600
   dependency_update = true
-  depends_on        = [helm_release.hpcc]
+}
+
+resource "helm_release" "storage" {
+  count = var.disable_helm ? 0 : 1
+
+  name             = "azstorage"
+  namespace        = var.hpcc.namespace
+  chart            = local.storage_chart
+  values           = var.storage.values == null ? null : concat([file("${path.root}/values/hpcc-azurefile.yaml")], [for v in var.storage.values : file(v)])
+  create_namespace = true
+
+  timeout           = 600
+  dependency_update = true
+  depends_on = [
+    module.storage_account
+  ]
 }
 
 module "storage_account" {
-  source = "github.com/Azure-Terraform/terraform-azurerm-storage-account.git?ref=v0.6.0"
+  source = "./storage_account"
 
-  count = var.storage.disable_storage_account ? 0 : 1
-
-  resource_group_name = module.resource_group.name
-  location            = module.resource_group.location
-  names               = local.names
-  tags                = local.tags
-
-  account_kind            = var.storage.account_kind
-  replication_type        = var.storage.replication_type
-  account_tier            = var.storage.account_tier
-  access_tier             = var.storage.access_tier
-  enable_large_file_share = var.storage.enable_large_file_share
-  enable_static_website   = var.storage.enable_static_website
-
-  access_list = {
-    "my_ip" = chomp(data.http.my_ip.body)
-  }
-
-  service_endpoints = {
-    "iaas-public" = module.virtual_network.subnet["iaas-public"].id
-  }
+  unique_name      = var.resource_group.unique_name
+  naming_rules     = var.disable_naming_conventions ? "" : module.naming[0].yaml
+  names            = local.names
+  location         = var.resource_group.location
+  storage          = var.storage
+  existing_storage = data.azurerm_storage_account.existing_sa
+  tags             = local.tags
 }
 
-resource "azurerm_network_security_rule" "ingress-internet" {
+resource "azurerm_network_security_rule" "ingress_internet" {
   count = var.expose_services ? 1 : 0
 
   name                        = "Allow_Internet_Ingress"
@@ -270,14 +266,4 @@ resource "null_resource" "az" {
     command     = local.az_command
     interpreter = local.is_windows_os ? ["PowerShell", "-Command"] : ["/bin/bash", "-c"]
   }
-
-  depends_on = [module.kubernetes[0]]
-}
-
-output "aks_login" {
-  value = "az aks get-credentials --name ${module.kubernetes[0].name} --resource-group ${module.resource_group.name}"
-}
-
-output "advisor_recommendations" {
-  value = data.azurerm_advisor_recommendations.advisor.recommendations
 }

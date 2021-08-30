@@ -22,16 +22,28 @@ resource_group = {
   location    = "eastus2"
 }
 
-system_node_pool = {
-  vm_size    = "Standard_B2s"
-  node_count = 2
-}
+node_pools = {
+  system = {
+    vm_size             = "Standard_B2s"
+    node_count          = 1
+    enable_auto_scaling = true
+    min_count           = 1
+    max_count           = 2
+  }
 
-additional_node_pool = {
-  vm_size             = "Standard_B2ms"
-  enable_auto_scaling = true
-  min_count           = 1
-  max_count           = 3
+  addpool1 = {
+    vm_size             = "Standard_B2ms"
+    enable_auto_scaling = true
+    min_count           = 1
+    max_count           = 2
+  }
+
+  addpool2 = {
+    vm_size             = "Standard_B2ms"
+    enable_auto_scaling = true
+    min_count           = 1
+    max_count           = 3
+  }
 }
 
 hpcc = {
@@ -49,6 +61,23 @@ elk = {
   values = null
 }
 
+storage = {
+  access_tier              = "Hot"
+  account_kind             = "StorageV2"
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  chart                    = null
+  values                   = []
+
+  quotas = {
+    dali  = 3
+    data  = 2
+    dll   = 2
+    lz    = 2
+    sasha = 5
+  }
+}
+
 # Optional Attributes
 # -------------------
 # expose_services - Expose ECLWatch and ELK to the internet. This can be unsafe and may not be supported by your organization. 
@@ -61,27 +90,25 @@ elk = {
 # image_name - Name of the image other than platform-core
 # Example: image_name = "bar"
 
+# image_version - Version of the image
+# Example: image_version = "bar"
+
 # auto_connect - Automatically connect to the kubernetes cluster from the host machine.
 # Example: auto_connect = true 
 
 # disable_helm - Disable Helm deployments by Terraform. This is reserved for experimentation with other deployment tools like Flux2.
 # Example: disable_helm = false 
 
-# disable_kubernetes - Gracefully shut the Kubernetes cluster down. terraform apply -var-file=admin.tfvars is needed afterwards.
-# Example: disable_kubernetes = true 
+# delete_aks - Gracefully shut the Kubernetes cluster down and leaves the storage. terraform apply -var-file=admin.tfvars is needed afterwards.
+# Example: delete_aks = true 
 
 # disable_naming_conventions - Disable naming conventions
 # Example: disable_naming_conventions = true 
 
-# storage - Settings for the storage account.
-# Example: 
-# storage = {
-#   disable_storage_account = false
-#   access_tier             = "Hot"
-#   account_kind            = "StorageV2"
-#   account_tier            = "Premium"
-#   chart                   = null
-#   enable_large_file_share = "false"
-#   replication_type        = "LRS"
-#   values                  = []
+# existing_storage - Connect to an existing storage account.
+# Example:
+# existing_storage = {
+#   name                = "carinaindia"
+#   resource_group_name = "carina-india-sa"
+#   subscription_id     = ""
 # }
