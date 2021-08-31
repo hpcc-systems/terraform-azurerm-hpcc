@@ -5,12 +5,43 @@ resource "random_string" "random" {
   special = false
 }
 
+module "subscription" {
+  source          = "github.com/Azure-Terraform/terraform-azurerm-subscription-data.git?ref=v1.0.0"
+  subscription_id = data.azurerm_subscription.current.subscription_id
+}
+
+module "naming" {
+  source = "github.com/Azure-Terraform/example-naming-template.git?ref=v1.0.0"
+
+  count = var.disable_naming_conventions ? 0 : 1
+}
+
+module "metadata" {
+  source = "github.com/Azure-Terraform/terraform-azurerm-metadata.git?ref=v1.5.1"
+
+  count = var.disable_naming_conventions ? 0 : 1
+
+  naming_rules = module.naming[0].yaml
+
+  market              = var.metadata.market
+  location            = var.storage.location
+  sre_team            = var.metadata.sre_team
+  environment         = var.metadata.environment
+  product_name        = var.metadata.product_name
+  business_unit       = var.metadata.business_unit
+  product_group       = var.metadata.product_group
+  subscription_type   = var.metadata.subscription_type
+  resource_group_type = var.metadata.resource_group_type
+  subscription_id     = module.subscription.output.subscription_id
+  project             = var.metadata.project
+}
+
 module "resource_group" {
   source = "github.com/Azure-Terraform/terraform-azurerm-resource-group.git?ref=v2.0.0"
 
   unique_name = var.unique_name
-  location    = var.location
-  names       = var.names
+  location    = var.storage.location
+  names       = local.names
   tags        = var.tags
 }
 
@@ -21,7 +52,7 @@ module "virtual_network" {
 
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
-  names               = var.names
+  names               = local.names
   tags                = var.tags
 
   address_space = ["10.1.0.0/22"]
@@ -62,7 +93,7 @@ module "virtual_network" {
 resource "azurerm_public_ip" "public_ip" {
   name                = "private_link_public_ip"
   sku                 = "Standard"
-  location            = var.location
+  location            = module.resource_group.location
   resource_group_name = module.resource_group.name
   allocation_method   = "Static"
 }
@@ -70,7 +101,7 @@ resource "azurerm_public_ip" "public_ip" {
 resource "azurerm_lb" "private_link_lb" {
   name                = "private_link_lb"
   sku                 = "Standard"
-  location            = var.location
+  location            = module.resource_group.location
   resource_group_name = module.resource_group.name
 
   frontend_ip_configuration {
@@ -82,7 +113,7 @@ resource "azurerm_lb" "private_link_lb" {
 resource "azurerm_private_link_service" "private_link_svc" {
   name                = "sa_privatelink"
   resource_group_name = module.resource_group.name
-  location            = var.location
+  location            = module.resource_group.location
 
   auto_approval_subscription_ids              = [can(var.existing_storage.subscription_id) ? var.existing_storage.subscription_id : data.azurerm_subscription.current.subscription_id]
   visibility_subscription_ids                 = [can(var.existing_storage.subscription_id) ? var.existing_storage.subscription_id : data.azurerm_subscription.current.subscription_id]

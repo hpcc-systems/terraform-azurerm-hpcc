@@ -74,10 +74,7 @@ variable "tags" {
 
 variable "resource_group" {
   description = "Resource group module variables."
-  type = object({
-    unique_name = bool
-    location    = string
-  })
+  type = any
 
   default = {
     unique_name = true
@@ -111,21 +108,8 @@ variable "image_version" {
 
 variable "hpcc" {
   description = "HPCC Helm chart variables."
-  type = object({
-    chart     = string
-    namespace = string
-    name      = string
-    values    = list(string)
-    version   = string
-  })
-
-  default = {
-    chart     = null
-    name      = "myhpcck8s"
-    namespace = "default"
-    values    = []
-    version   = null
-  }
+  type = any
+  default = { default = {name = "myhpcck8s"} }
 }
 
 variable "storage" {
@@ -142,17 +126,6 @@ variable "existing_storage" {
 
 variable "elk" {
   description = "HPCC Helm chart variables."
-  type = object({
-    enable = bool
-    name   = string
-    chart  = string
-    values = list(string)
-  })
-
-  default = {
-    enable = true
-    name   = "myhpccelk"
-    chart  = null
-    values = []
-  }
+  type        = any
+  default     = { default = {name = "myhpccelk"} }
 }

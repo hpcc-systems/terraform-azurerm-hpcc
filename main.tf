@@ -57,7 +57,7 @@ module "virtual_network" {
   naming_rules = var.disable_naming_conventions ? "" : module.naming[0].yaml
 
   resource_group_name = var.delete_aks ? "" : module.resource_group[0].name
-  location            = var.resource_group.location
+  location            = module.resource_group[0].location
   names               = local.names
   tags                = local.tags
 
@@ -98,7 +98,7 @@ module "virtual_network" {
 
 resource "azurerm_private_endpoint" "pe" {
   name                = "sa_endpoint"
-  location            = var.resource_group.location
+  location            = module.resource_group[0].location
   resource_group_name = module.resource_group[0].name
   subnet_id           = module.virtual_network.subnets["iaas-public"].id
 
@@ -113,8 +113,8 @@ resource "azurerm_private_endpoint" "pe" {
 module "kubernetes" {
   source = "github.com/Azure-Terraform/terraform-azurerm-kubernetes.git?ref=v4.2.1"
 
-  cluster_name        = "${local.names.resource_group_type}-${local.names.product_name}-terraform-${local.names.location}-${var.admin.name}"
-  location            = var.resource_group.location
+  cluster_name        = "${local.names.resource_group_type}-${local.names.product_name}-terraform-${local.names.location}-${var.admin.name}-${terraform.workspace}"
+  location            = module.resource_group[0].location
   names               = local.names
   tags                = local.tags
   resource_group_name = var.delete_aks ? "" : module.resource_group[0].name
@@ -161,15 +161,26 @@ resource "kubernetes_secret" "sa_secret" {
 }
 
 resource "helm_release" "hpcc" {
-  # count = var.disable_helm ? 0 : var.image_root != "" && var.image_root != null ? 1 : 0
   count = var.disable_helm ? 0 : 1
 
-  name             = var.hpcc.name
-  namespace        = var.hpcc.namespace
-  chart            = local.hpcc_chart
-  create_namespace = true
-  values = concat(var.expose_services ? [file("${path.root}/values/esp.yaml")] : [], var.hpcc.values != null && var.hpcc.values != "" ?
-  [for v in var.hpcc.values : file(v)] : [], [file("${path.root}/values/values-retained-azurefile.yaml")])
+  name                       = var.hpcc.name
+  chart                      = local.hpcc_chart
+  create_namespace           = true
+  namespace                  = try(var.hpcc.namespace, terraform.workspace)
+  atomic                     = try(var.hpcc.atomic, null)
+  recreate_pods              = try(var.hpcc.recreate_pods, null)
+  cleanup_on_fail            = try(var.hpcc.cleanup_on_fail, null)
+  disable_openapi_validation = try(var.hpcc.disable_openapi_validation, null)
+  wait                       = try(var.hpcc.wait, null)
+  dependency_update          = try(var.hpcc.dependency_update, null)
+  timeout                    = try(var.hpcc.timeout, 900)
+  wait_for_jobs              = try(var.hpcc.wait_for_jobs, null)
+  set                        = try(var.hpcc.set, null)
+  postrender                 = try(var.hpcc.postrender, null)
+  lint                       = try(var.hpcc.lint, null)
+
+  values = concat(var.expose_services ? [file("${path.root}/values/esp.yaml")] : [],
+  try([for v in var.hpcc.values : file(v)], []), [file("${path.root}/values/values-retained-azurefile.yaml")])
 
   dynamic "set" {
     for_each = var.image_root != "" && var.image_root != null ? [1] : []
@@ -196,35 +207,50 @@ resource "helm_release" "hpcc" {
 
   }
 
-  dependency_update = true
-  timeout           = 1000
-  depends_on        = [helm_release.storage]
+  depends_on = [helm_release.storage]
 }
 
 resource "helm_release" "elk" {
   count = var.disable_helm || !var.elk.enable ? 0 : 1
 
-  name             = var.elk.name
-  namespace        = var.hpcc.namespace
-  chart            = local.elk_chart
-  values           = concat(var.elk.values != null && var.elk.values != "" ? [for v in var.elk.values : file(v)] : [], var.expose_services ? [file("${path.root}/values/elk.yaml")] : [])
-  create_namespace = true
-
-  timeout           = 600
-  dependency_update = true
+  name                       = var.elk.name
+  namespace                  = try(var.hpcc.namespace, terraform.workspace)
+  chart                      = local.elk_chart
+  values                     = concat(try([for v in var.elk.values : file(v)], []), var.expose_services ? [file("${path.root}/values/elk.yaml")] : [])
+  create_namespace           = true
+  atomic                     = try(var.elk.atomic, null)
+  recreate_pods              = try(var.elk.recreate_pods, null)
+  cleanup_on_fail            = try(var.elk.cleanup_on_fail, null)
+  disable_openapi_validation = try(var.elk.disable_openapi_validation, null)
+  wait                       = try(var.elk.wait, null)
+  dependency_update          = try(var.elk.dependency_update, null)
+  timeout                    = try(var.elk.timeout, 600)
+  wait_for_jobs              = try(var.elk.wait_for_jobs, null)
+  set                        = try(var.elk.set, null)
+  postrender                 = try(var.elk.postrender, null)
+  lint                       = try(var.elk.lint, null)
 }
 
 resource "helm_release" "storage" {
   count = var.disable_helm ? 0 : 1
 
-  name             = "azstorage"
-  namespace        = var.hpcc.namespace
-  chart            = local.storage_chart
-  values           = var.storage.values == null ? null : concat([file("${path.root}/values/hpcc-azurefile.yaml")], [for v in var.storage.values : file(v)])
-  create_namespace = true
+  name                       = "azstorage"
+  chart                      = local.storage_chart
+  values                     = concat([file("${path.root}/values/hpcc-azurefile.yaml")], try([for v in var.storage.values : file(v)], []))
+  create_namespace           = true
+  namespace                  = try(var.hpcc.namespace, terraform.workspace)
+  atomic                     = try(var.storage.atomic, null)
+  recreate_pods              = try(var.storage.recreate_pods, null)
+  cleanup_on_fail            = try(var.storage.cleanup_on_fail, null)
+  disable_openapi_validation = try(var.storage.disable_openapi_validation, null)
+  wait                       = try(var.storage.wait, null)
+  dependency_update          = try(var.storage.dependency_update, null)
+  timeout                    = try(var.storage.timeout, 600)
+  wait_for_jobs              = try(var.storage.wait_for_jobs, null)
+  set                        = try(var.storage.set, null)
+  postrender                 = try(var.storage.postrender, null)
+  lint                       = try(var.storage.lint, null)
 
-  timeout           = 600
-  dependency_update = true
   depends_on = [
     module.storage_account
   ]
@@ -233,13 +259,13 @@ resource "helm_release" "storage" {
 module "storage_account" {
   source = "./storage_account"
 
-  unique_name      = var.resource_group.unique_name
-  naming_rules     = var.disable_naming_conventions ? "" : module.naming[0].yaml
-  names            = local.names
-  location         = var.resource_group.location
-  storage          = var.storage
-  existing_storage = data.azurerm_storage_account.existing_sa
-  tags             = local.tags
+  unique_name                = var.resource_group.unique_name
+  disable_naming_conventions = var.disable_naming_conventions
+  naming_rules               = var.disable_naming_conventions ? "" : module.naming[0].yaml
+  metadata                   = var.metadata
+  storage                    = var.storage
+  existing_storage           = data.azurerm_storage_account.existing_sa
+  tags                       = local.tags
 }
 
 resource "azurerm_network_security_rule" "ingress_internet" {
@@ -266,4 +292,6 @@ resource "null_resource" "az" {
     command     = local.az_command
     interpreter = local.is_windows_os ? ["PowerShell", "-Command"] : ["/bin/bash", "-c"]
   }
+
+  depends_on = [module.kubernetes[0]]
 }

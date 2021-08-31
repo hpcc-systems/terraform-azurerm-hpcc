@@ -3,12 +3,13 @@ variable "naming_rules" {
   type        = string
 }
 
-variable "location" {
-  description = "Azure Region"
-  type        = string
+variable "disable_naming_conventions" {
+  description = "Naming convention module."
+  type        = bool
+  default     = false
 }
 
-variable "names" {
+variable "metadata" {
   description = "Names"
   type        = map(string)
 }

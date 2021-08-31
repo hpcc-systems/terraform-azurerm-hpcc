@@ -54,18 +54,12 @@ hpcc = {
   values    = []
 }
 
-elk = {
-  enable = true
-  name   = "myhpccelk"
-  chart  = null
-  values = null
-}
-
 storage = {
   access_tier              = "Hot"
   account_kind             = "StorageV2"
   account_tier             = "Standard"
   account_replication_type = "LRS"
+  location                 = "eastus2"
   chart                    = null
   values                   = []
 
@@ -76,6 +70,13 @@ storage = {
     lz    = 2
     sasha = 5
   }
+}
+
+elk = {
+  enable = true
+  name   = "myhpccelk"
+  chart  = null
+  values = null
 }
 
 # Optional Attributes
