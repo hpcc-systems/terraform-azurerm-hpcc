@@ -1,6 +1,7 @@
 data "azurerm_advisor_recommendations" "advisor" {
+
   filter_by_category        = ["security", "cost"]
-  filter_by_resource_groups = [module.resource_group[0].name, module.storage_account.resource_group_name]
+  filter_by_resource_groups = [module.resource_group.name, module.storage_account.resource_group_name]
 }
 
 data "http" "host_ip" {

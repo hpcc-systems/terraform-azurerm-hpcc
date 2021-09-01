@@ -30,12 +30,6 @@ variable "disable_naming_conventions" {
   default     = false
 }
 
-variable "delete_aks" {
-  description = "Delete Kubernetes cluster."
-  type        = bool
-  default     = false
-}
-
 variable "metadata" {
   description = "Metadata module variables."
   type = object({
@@ -74,7 +68,7 @@ variable "tags" {
 
 variable "resource_group" {
   description = "Resource group module variables."
-  type = any
+  type        = any
 
   default = {
     unique_name = true
@@ -108,8 +102,8 @@ variable "image_version" {
 
 variable "hpcc" {
   description = "HPCC Helm chart variables."
-  type = any
-  default = { default = {name = "myhpcck8s"} }
+  type        = any
+  default     = { default = { name = "myhpcck8s" } }
 }
 
 variable "storage" {
@@ -127,5 +121,5 @@ variable "existing_storage" {
 variable "elk" {
   description = "HPCC Helm chart variables."
   type        = any
-  default     = { default = {name = "myhpccelk"} }
+  default     = { default = { name = "myhpccelk", enable = true } }
 }

@@ -17,16 +17,12 @@ module "subscription" {
 
 module "naming" {
   source = "github.com/Azure-Terraform/example-naming-template.git?ref=v1.0.0"
-
-  count = var.disable_naming_conventions ? 0 : 1
 }
 
 module "metadata" {
   source = "github.com/Azure-Terraform/terraform-azurerm-metadata.git?ref=v1.5.1"
 
-  count = var.disable_naming_conventions ? 0 : 1
-
-  naming_rules = module.naming[0].yaml
+  naming_rules = module.naming.yaml
 
   market              = var.metadata.market
   location            = var.resource_group.location
@@ -43,7 +39,6 @@ module "metadata" {
 
 module "resource_group" {
   source = "github.com/Azure-Terraform/terraform-azurerm-resource-group.git?ref=v2.0.0"
-  count  = var.delete_aks ? 0 : 1
 
   unique_name = var.resource_group.unique_name
   location    = var.resource_group.location
@@ -54,10 +49,10 @@ module "resource_group" {
 module "virtual_network" {
   source = "github.com/Azure-Terraform/terraform-azurerm-virtual-network.git?ref=v2.9.0"
 
-  naming_rules = var.disable_naming_conventions ? "" : module.naming[0].yaml
+  naming_rules = var.disable_naming_conventions ? "" : module.naming.yaml
 
-  resource_group_name = var.delete_aks ? "" : module.resource_group[0].name
-  location            = module.resource_group[0].location
+  resource_group_name = module.resource_group.name
+  location            = var.resource_group.location
   names               = local.names
   tags                = local.tags
 
@@ -97,9 +92,10 @@ module "virtual_network" {
 }
 
 resource "azurerm_private_endpoint" "pe" {
+
   name                = "sa_endpoint"
-  location            = module.resource_group[0].location
-  resource_group_name = module.resource_group[0].name
+  location            = var.resource_group.location
+  resource_group_name = module.resource_group.name
   subnet_id           = module.virtual_network.subnets["iaas-public"].id
 
   private_service_connection {
@@ -113,13 +109,12 @@ resource "azurerm_private_endpoint" "pe" {
 module "kubernetes" {
   source = "github.com/Azure-Terraform/terraform-azurerm-kubernetes.git?ref=v4.2.1"
 
-  cluster_name        = "${local.names.resource_group_type}-${local.names.product_name}-terraform-${local.names.location}-${var.admin.name}-${terraform.workspace}"
-  location            = module.resource_group[0].location
+  cluster_name        = local.cluster_name
+  location            = var.resource_group.location
   names               = local.names
   tags                = local.tags
-  resource_group_name = var.delete_aks ? "" : module.resource_group[0].name
-
-  identity_type = "UserAssigned" # Allowed values: UserAssigned or SystemAssigned
+  resource_group_name = module.resource_group.name
+  identity_type       = "UserAssigned" # Allowed values: UserAssigned or SystemAssigned
 
   rbac = {
     enabled        = false
@@ -148,6 +143,7 @@ module "kubernetes" {
 }
 
 resource "kubernetes_secret" "sa_secret" {
+
   metadata {
     name = "azure-secret"
   }
@@ -175,8 +171,6 @@ resource "helm_release" "hpcc" {
   dependency_update          = try(var.hpcc.dependency_update, null)
   timeout                    = try(var.hpcc.timeout, 900)
   wait_for_jobs              = try(var.hpcc.wait_for_jobs, null)
-  set                        = try(var.hpcc.set, null)
-  postrender                 = try(var.hpcc.postrender, null)
   lint                       = try(var.hpcc.lint, null)
 
   values = concat(var.expose_services ? [file("${path.root}/values/esp.yaml")] : [],
@@ -226,8 +220,6 @@ resource "helm_release" "elk" {
   dependency_update          = try(var.elk.dependency_update, null)
   timeout                    = try(var.elk.timeout, 600)
   wait_for_jobs              = try(var.elk.wait_for_jobs, null)
-  set                        = try(var.elk.set, null)
-  postrender                 = try(var.elk.postrender, null)
   lint                       = try(var.elk.lint, null)
 }
 
@@ -247,12 +239,10 @@ resource "helm_release" "storage" {
   dependency_update          = try(var.storage.dependency_update, null)
   timeout                    = try(var.storage.timeout, 600)
   wait_for_jobs              = try(var.storage.wait_for_jobs, null)
-  set                        = try(var.storage.set, null)
-  postrender                 = try(var.storage.postrender, null)
   lint                       = try(var.storage.lint, null)
 
   depends_on = [
-    module.storage_account
+    module.storage_account //storage must be deployed before hpcc.
   ]
 }
 
@@ -261,7 +251,6 @@ module "storage_account" {
 
   unique_name                = var.resource_group.unique_name
   disable_naming_conventions = var.disable_naming_conventions
-  naming_rules               = var.disable_naming_conventions ? "" : module.naming[0].yaml
   metadata                   = var.metadata
   storage                    = var.storage
   existing_storage           = data.azurerm_storage_account.existing_sa
@@ -293,5 +282,5 @@ resource "null_resource" "az" {
     interpreter = local.is_windows_os ? ["PowerShell", "-Command"] : ["/bin/bash", "-c"]
   }
 
-  depends_on = [module.kubernetes[0]]
+  triggers = { kubernetes_id = module.kubernetes.id } //must be run after the Kubernetes cluster is deployed.
 }

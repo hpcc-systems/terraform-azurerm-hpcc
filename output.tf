@@ -1,9 +1,9 @@
 output "aks_login" {
-  value = "az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group[0].name}"
+  value = try("az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name}", "")
 }
 
 output "advisor_recommendations" {
-  value = data.azurerm_advisor_recommendations.advisor.recommendations
+  value = try(data.azurerm_advisor_recommendations.advisor.recommendations, [])
 }
 
 output "storage_account_name" {

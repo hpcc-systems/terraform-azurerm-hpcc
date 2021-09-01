@@ -12,16 +12,12 @@ module "subscription" {
 
 module "naming" {
   source = "github.com/Azure-Terraform/example-naming-template.git?ref=v1.0.0"
-
-  count = var.disable_naming_conventions ? 0 : 1
 }
 
 module "metadata" {
   source = "github.com/Azure-Terraform/terraform-azurerm-metadata.git?ref=v1.5.1"
 
-  count = var.disable_naming_conventions ? 0 : 1
-
-  naming_rules = module.naming[0].yaml
+  naming_rules = module.naming.yaml
 
   market              = var.metadata.market
   location            = var.storage.location
@@ -48,7 +44,7 @@ module "resource_group" {
 module "virtual_network" {
   source = "github.com/Azure-Terraform/terraform-azurerm-virtual-network.git?ref=v2.9.0"
 
-  naming_rules = var.naming_rules
+  naming_rules = module.naming.yaml
 
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
@@ -137,15 +133,18 @@ resource "azurerm_private_link_service" "private_link_svc" {
 }
 
 resource "azurerm_storage_account" "storage_account" {
-  name                = "hpccsa"
-  resource_group_name = module.resource_group.name
 
+  name                     = "hpccsa"
+  resource_group_name      = module.resource_group.name
   location                 = module.resource_group.location
   account_tier             = var.storage.account_tier
   account_replication_type = var.storage.account_replication_type
   min_tls_version          = "TLS1_2"
+  tags                     = var.tags
 
-  tags = var.tags
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_storage_share" "storage_shares" {

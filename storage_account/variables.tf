@@ -1,8 +1,3 @@
-variable "naming_rules" {
-  description = "Naming convention rules."
-  type        = string
-}
-
 variable "disable_naming_conventions" {
   description = "Naming convention module."
   type        = bool

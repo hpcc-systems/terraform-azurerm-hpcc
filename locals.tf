@@ -10,9 +10,11 @@ locals {
     var.metadata.product_group != "" ? { product_group = var.metadata.product_group } : {},
     var.metadata.product_name != "" ? { product_name = var.metadata.product_name } : {},
     var.metadata.resource_group_type != "" ? { resource_group_type = var.metadata.resource_group_type } : {}
-  ) : module.metadata[0].names
+  ) : module.metadata.names
 
-  tags = var.disable_naming_conventions ? merge(var.tags, { "admin" = var.admin.name, "email" = var.admin.email }) : merge(module.metadata[0].tags, { "admin" = var.admin.name, "email" = var.admin.email }, try(var.tags))
+  tags = var.disable_naming_conventions ? merge(var.tags, { "admin" = var.admin.name, "email" = var.admin.email }) : merge(module.metadata.tags, { "admin" = var.admin.name, "email" = var.admin.email }, try(var.tags))
+
+  cluster_name = "${local.names.resource_group_type}-${local.names.product_name}-terraform-${local.names.location}-${var.admin.name}-${terraform.workspace}"
 
   hpcc_repository    = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-${var.hpcc.version}.tgz"
   storage_repository = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-azurefile-0.1.0.tgz"
@@ -22,7 +24,7 @@ locals {
   storage_chart = var.storage.chart != "" && var.storage.chart != null ? var.storage.chart : local.storage_repository
   elk_chart     = var.elk.chart != "" && var.elk.chart != null ? var.elk.chart : local.elk_repository
 
-  az_command = "az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group[0].name} --overwrite"
+  az_command = try("az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name} --overwrite", "")
 
   is_windows_os = substr(pathexpand("~"), 0, 1) == "/" ? false : true
 }
