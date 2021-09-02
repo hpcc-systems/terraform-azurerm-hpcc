@@ -11,7 +11,7 @@
 This module will deploy an HPCC AKS cluster using other abstracted modules.
 <br>
 
-<!--- BEGIN_TF_DOCS --->
+
 ## Providers
 
 | Name       | Version   |
@@ -213,7 +213,7 @@ This block contains information about the HPCC image to use. This block is optio
  | image_root | Image root to use. | string | hpccsystems |    no    |
 <br>
 
-### The `image_nmae` argument:
+### The `image_name` argument:
 This block contains information about the HPCC image to use. This block is optional.
 
  | Name       | Description        | Type   | Default       | Required |
@@ -233,13 +233,13 @@ This block disable helm deployments by Terraform. This block is optional and wil
 ### The `hpcc` block:
 This block deploys the HPCC helm chart. This block is optional.
 
- | Name      | Description                                                                  | Type         | Default                          | Required |
- | --------- | ---------------------------------------------------------------------------- | ------------ | -------------------------------- | :------: |
- | chart     | Path to local chart directory name. Examples: ./HPCC-Platform, ./helm-chart. | string       | null                             |   yes    |
- | namespace | Namespace to use.                                                            | string       | default                          |   yes    |
- | name      | Release name of the chart.                                                   | string       | `myhpcck8s`                      |   yes    |
- | values    | List of desired state files to use similar to -f in CLI.                     | list(string) | `values-retained-azurefile.yaml` |   yes    |
- | version   | Version of the HPCC chart.                                                   | string       | latest                           |   yes    |
+ | Name      | Description                                                             | Type         | Default                          | Required |
+ | --------- | ----------------------------------------------------------------------- | ------------ | -------------------------------- | :------: |
+ | chart     | Path to local chart directory name. Examples: ~/HPCC-Platform/helm/hpcc | string       | null                             |   yes    |
+ | namespace | Namespace to use.                                                       | string       | default                          |   yes    |
+ | name      | Release name of the chart.                                              | string       | `myhpcck8s`                      |   yes    |
+ | values    | List of desired state files to use similar to -f in CLI.                | list(string) | `values-retained-azurefile.yaml` |   yes    |
+ | version   | Version of the HPCC chart.                                              | string       | latest                           |   yes    |
 <br>
 
  Usage Example:
@@ -255,37 +255,19 @@ This block deploys the HPCC helm chart. This block is optional.
 ### The `storage` block:
 This block deploys the HPCC persistent volumes. This block is required.
 
- | Name                    | Description                                                                                            | Type         | Default     | Valid Options                                                                                 | Required |
- | ----------------------- | ------------------------------------------------------------------------------------------------------ | ------------ | ----------- | --------------------------------------------------------------------------------------------- | :------: |
- | access_tier             | Defines the access tier for `BlobStorage`, `FileStorage`, `Storage2` accounts.                         | string       | Hot         | `Cool`, `Hot`                                                                                 |   yes    |
- | account_kind            | Defines the Kind of account. Changing this will destroy your data.                                     | string       | `StorageV2` | `BlobStorage`. `BlockBlobStorage`, `FileStorage`, `Storage`, `StorageV2`                      |   yes    |
- | account_tier            | Defines the Tier to use for this storage account. Changing this will destroy your data.                | string       | `Premium`   | `Standard`, `Premium`                                                                         |   yes    |
- | disable_storage_account | Stop Terraform from creating a storage account. Persistent volumes will still be created.              | bool         | `false`     | `false`, `true`                                                                               |   yes    |
- | enable_large_file_share | Enable Large File Share.                                                                               | bool         | `false`     | `false`, `true`                                                                               |   yes    |
- | enable_static_website   | Enable Static Website                                                                                  | bool         | `false`     | can only be set to `true` when the `account_kind` is set to `StorageV2` or `BlockBlobStorage` |   yes    |
- | replication_type        | Defines the type of replication to use for this storage account. Changing this will destroy your data. | string       | `LRS`       | `LRS`, `GRS`, `RAGRS`, `ZRS`, `GZRS`, `RAGZRS`                                                |   yes    |
- | values                  | List of desired state files to use similar to -f in CLI.                                               | list(string) | []          | no                                                                                            |
+ | Name   | Description                                                                                           | Type         | Default     | Valid Options | Required |
+ | ------ | ----------------------------------------------------------------------------------------------------- | ------------ | ----------- | ------------- | :------: |
+ | chart  | Absolute path to local chart directory. Examples: ~/HPCC-Platform//helm/examples/azure/hpcc-azurefile | string       | null        | yes           |
+ | name   | Release name of the chart.                                                                            | string       | `myhpcck8s` | yes           |
+ | values | List of desired state files to use similar to -f in CLI.                                              | list(string) | []          | no            |
 <br>
 
 Usage Example:
 <br>
 
     storage = {
-        access_tier              = "Hot"
-        account_kind             = "StorageV2"
-        account_tier             = "Standard"
-        account_replication_type = "LRS"
         chart                    = null
         values                   = []
-        location                 = "eastus2"
-
-        quotas = {
-            dali  = 3
-            data  = 2
-            dll   = 2
-            lz    = 2
-            sasha = 5
-        }
     }
 
 <br>
@@ -293,11 +275,12 @@ Usage Example:
 ### The `elk` block:
 This block deploys the ELK chart. This block is optional.
 
- | Name   | Description                                              | Type                       | Default | Required  |
- | ------ | -------------------------------------------------------- | -------------------------- | ------- | :-------: |
- | enable | Enable ELK                                               | bool                       | `true`  |    yes    |
- | name   | name                                                     | Release name of the chart. | string  | myhpccelk | yes |
- | values | List of desired state files to use similar to -f in CLI. | list(string)               | -       |    yes    |
+ | Name   | Description                                                                                 | Type                       | Default | Required  |
+ | ------ | ------------------------------------------------------------------------------------------- | -------------------------- | ------- | :-------: |
+ | chart  | Path to local chart directory name. Examples: ./HPCC-Platform//helm/managed/logging/elastic | string                     | null    |    yes    |
+ | enable | Enable ELK                                                                                  | bool                       | `true`  |    yes    |
+ | name   | name                                                                                        | Release name of the chart. | string  | myhpccelk | yes |
+ | values | List of desired state files to use similar to -f in CLI.                                    | list(string)               | -       |    yes    |
 <br>
 
 Usage Example:

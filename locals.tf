@@ -20,9 +20,9 @@ locals {
   storage_repository = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-azurefile-0.1.0.tgz"
   elk_repository     = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/elastic4hpcclogs-1.0.0.tgz"
 
-  hpcc_chart    = var.hpcc.chart != "" && var.hpcc.chart != null ? var.hpcc.chart : local.hpcc_repository
-  storage_chart = var.storage.chart != "" && var.storage.chart != null ? var.storage.chart : local.storage_repository
-  elk_chart     = var.elk.chart != "" && var.elk.chart != null ? var.elk.chart : local.elk_repository
+  hpcc_chart    = can(var.hpcc.chart) ? var.hpcc.chart : local.hpcc_repository
+  storage_chart = can(var.storage.chart) ? var.storage.chart : local.storage_repository
+  elk_chart     = can(var.elk.chart) ? var.elk.chart : local.elk_repository
 
   az_command = try("az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name} --overwrite", "")
 

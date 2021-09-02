@@ -100,7 +100,7 @@ resource "azurerm_private_endpoint" "pe" {
 
   private_service_connection {
     name                           = "sa_privateserviceconnection"
-    private_connection_resource_id = can(var.existing_storage.name) ? data.azurerm_storage_account.existing_sa[0].id : module.storage_account.hpccsa.id
+    private_connection_resource_id = data.azurerm_storage_account.hpccsa.id
     subresource_names              = ["file"]
     is_manual_connection           = false
   }
@@ -149,8 +149,8 @@ resource "kubernetes_secret" "sa_secret" {
   }
 
   data = {
-    "azurestorageaccountname" = can(var.existing_storage.name) ? var.existing_storage.name : module.storage_account.hpccsa.name
-    "azurestorageaccountkey"  = can(var.existing_storage.name) ? data.azurerm_storage_account.existing_sa[0].primary_access_key : module.storage_account.hpccsa.primary_access_key
+    "azurestorageaccountname" = var.storage.name
+    "azurestorageaccountkey"  = data.azurerm_storage_account.hpccsa.primary_access_key
   }
 
   type = "Opaque"
@@ -240,21 +240,6 @@ resource "helm_release" "storage" {
   timeout                    = try(var.storage.timeout, 600)
   wait_for_jobs              = try(var.storage.wait_for_jobs, null)
   lint                       = try(var.storage.lint, null)
-
-  depends_on = [
-    module.storage_account //storage must be deployed before hpcc.
-  ]
-}
-
-module "storage_account" {
-  source = "./storage_account"
-
-  unique_name                = var.resource_group.unique_name
-  disable_naming_conventions = var.disable_naming_conventions
-  metadata                   = var.metadata
-  storage                    = var.storage
-  existing_storage           = data.azurerm_storage_account.existing_sa
-  tags                       = local.tags
 }
 
 resource "azurerm_network_security_rule" "ingress_internet" {
