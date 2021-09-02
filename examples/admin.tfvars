@@ -50,33 +50,23 @@ hpcc = {
   version   = "8.2.12-rc1"
   namespace = "default"
   name      = "myhpcck8s"
-  chart     = null
-  values    = []
+  # chart     = ""
+  # values    = []
 }
 
 storage = {
-  access_tier              = "Hot"
-  account_kind             = "StorageV2"
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-  location                 = "eastus2"
-  chart                    = null
-  values                   = []
-
-  quotas = {
-    dali  = 3
-    data  = 2
-    dll   = 2
-    lz    = 2
-    sasha = 5
-  }
+  storage_account_name = "godjihpccsa1"
+  resource_group_name  = "app-godji-sandbox-canadacentral-62827"
+  # subscription_id     = ""
+  # chart  = ""
+  # values = []
 }
 
 elk = {
   enable = true
   name   = "myhpccelk"
-  chart  = null
-  values = null
+  # chart  = ""
+  # values = ""
 }
 
 # Optional Attributes
@@ -100,16 +90,5 @@ elk = {
 # disable_helm - Disable Helm deployments by Terraform. This is reserved for experimentation with other deployment tools like Flux2.
 # Example: disable_helm = false 
 
-# delete_aks - Gracefully shut the Kubernetes cluster down and leaves the storage. terraform apply -var-file=admin.tfvars is needed afterwards.
-# Example: delete_aks = true 
-
 # disable_naming_conventions - Disable naming conventions
 # Example: disable_naming_conventions = true 
-
-# existing_storage - Connect to an existing storage account.
-# Example:
-# existing_storage = {
-#   name                = "carinaindia"
-#   resource_group_name = "carina-india-sa"
-#   subscription_id     = ""
-# }

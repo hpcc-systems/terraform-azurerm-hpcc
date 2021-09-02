@@ -109,11 +109,7 @@ variable "hpcc" {
 variable "storage" {
   description = "Storage account arguments."
   type        = any
-  default = {
-    default = {
-
-    }
-  }
+  default     = { default = {} }
 }
 
 variable "existing_storage" {

@@ -13,6 +13,6 @@ data "azurerm_subscription" "current" {
 
 data "azurerm_storage_account" "hpccsa" {
 
-  name                = var.storage.name
+  name                = var.storage.storage_account_name
   resource_group_name = var.storage.resource_group_name
 }

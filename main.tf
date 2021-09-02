@@ -149,7 +149,7 @@ resource "kubernetes_secret" "sa_secret" {
   }
 
   data = {
-    "azurestorageaccountname" = var.storage.name
+    "azurestorageaccountname" = var.storage.storage_account_name
     "azurestorageaccountkey"  = data.azurerm_storage_account.hpccsa.primary_access_key
   }
 
