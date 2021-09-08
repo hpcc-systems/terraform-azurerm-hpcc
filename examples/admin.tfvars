@@ -55,8 +55,8 @@ hpcc = {
 }
 
 storage = {
-  storage_account_name = "godjihpccsa1"
-  resource_group_name  = "app-godji-sandbox-canadacentral-62827"
+  storage_account_name = "hpccdemohpccsa1"
+  resource_group_name  = "app-hpccdemo-sandbox-canadacentral-62827"
   # subscription_id     = ""
   # chart  = ""
   # values = []
