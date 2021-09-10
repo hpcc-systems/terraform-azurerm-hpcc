@@ -255,19 +255,22 @@ This block deploys the HPCC helm chart. This block is optional.
 ### The `storage` block:
 This block deploys the HPCC persistent volumes. This block is required.
 
- | Name   | Description                                                                                           | Type         | Default     | Valid Options | Required |
- | ------ | ----------------------------------------------------------------------------------------------------- | ------------ | ----------- | ------------- | :------: |
- | chart  | Absolute path to local chart directory. Examples: ~/HPCC-Platform//helm/examples/azure/hpcc-azurefile | string       | null        | yes           |
- | name   | Release name of the chart.                                                                            | string       | `myhpcck8s` | yes           |
- | values | List of desired state files to use similar to -f in CLI.                                              | list(string) | []          | no            |
+ | Name                 | Description                                                                                           | Type                                                                 | Default     | Valid Options | Required |
+ | -------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----------- | ------------- | :------: |
+ | chart                | Absolute path to local chart directory. Examples: ~/HPCC-Platform//helm/examples/azure/hpcc-azurefile | string                                                               | null        | yes           |
+ | name                 | Release name of the chart.                                                                            | string                                                               | `myhpcck8s` | yes           |
+ | values               | List of desired state files to use similar to -f in CLI.                                              | list(string)                                                         | []          | no            |
+ | storafe_account_name | Required                                                                                              | The name of the storage account.                                     |
+ | resource_group_name  | Required                                                                                              | The name of the resource group in which the storage account belongs. |
+ | subscription_id      | Optional if same as cluster's subscription                                                            | The ID of the subscription in which the storage account belongs.     |
 <br>
 
 Usage Example:
 <br>
 
     storage = {
-        chart                    = null
-        values                   = []
+        chart                    = "~/hpcc-helm/my-custom-chart"
+        values                   = [~/my-custom-values.yaml]
     }
 
 <br>
@@ -308,24 +311,7 @@ The `hpcc`, `storage` and `elk` blocks also support the following arguments:
 | wait_for_jobs              | Optional           | If wait is enabled, will wait until all Jobs have been completed before marking the release as successful. It will wait for as long as timeout. Defaults to false. |
 | lint                       | Optional           | Run the helm chart linter during the plan. Defaults to false.                                                                                                      |
 <br>
-### The `existing_storage` block:
-This block imports existing to your cluster and supports the following arguments:
 
-| Name | Optional, Required| Description| 
-|name| Required| The name of the storage account.|
-|resource_group_name| Required| The name of the resource group in which the storage account belongs.|
-|subscription_id|Optional if same as cluster's subscription| The ID of the subscription in which the storage account belongs.|
-<br>
-
-Usage Example:
-<br>
-
-    existing_storage = {
-        name                = "carinaindia"
-        resource_group_name = "carina-india-sa"
-    }
-
-<br>
 
 ### The `auto_connect` argument:
 This block automatically connect your cluster to your local machine similarly to `az aks get-credentials`.
