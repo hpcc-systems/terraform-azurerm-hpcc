@@ -321,6 +321,14 @@ This block automatically connect your cluster to your local machine similarly to
  | auto_connect | Automatically connect to the Kubernetes cluster from the host machine by overwriting the current context. | bool | `false` |    no    |
 <br>
 
+### The `auto_connect` argument:
+This block automatically launch the ECLWatch interface.
+
+ | Name         | Description                                                                                               | Type | Default | Required |
+ | ------------ | --------------------------------------------------------------------------------------------------------- | ---- | ------- | :------: |
+ | auto_launch_eclwatch | Automatically launch the ECLWatch interface. | bool | `false` |    no    |
+<br>
+
 ### The `expose_services` argument:
 Expose ECLWatch and ELK to the internet. This is unsafe and may not be supported by your organization. Setting this to `true` can cause eclwatch service to stick in a pending state.
 

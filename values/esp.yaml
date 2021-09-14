@@ -35,7 +35,7 @@ esp:
   auth: none
   replicas: 1
   service:
-    visibility: local
+    visibility: global
     servicePort: 8002
   #resources:
   #  cpu: "250m"

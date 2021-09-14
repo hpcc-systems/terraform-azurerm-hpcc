@@ -25,6 +25,7 @@ locals {
   elk_chart     = can(var.elk.chart) ? var.elk.chart : local.elk_repository
 
   az_command = try("az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name} --overwrite", "")
+  web_urls = {auto_launch_eclwatch = "http://$(kubectl get svc --field-selector metadata.name=eclwatch | awk 'NR==2 {print $4}'):8010"}
 
   is_windows_os = substr(pathexpand("~"), 0, 1) == "/" ? false : true
 }

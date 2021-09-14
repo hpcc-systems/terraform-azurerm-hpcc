@@ -203,7 +203,7 @@ resource "helm_release" "hpcc" {
 
   }
 
-  depends_on = [helm_release.storage]
+  depends_on = [helm_release.storage, module.kubernetes]
 }
 
 resource "helm_release" "elk" {
@@ -322,4 +322,13 @@ resource "null_resource" "az" {
   }
 
   triggers = { kubernetes_id = module.kubernetes.id } //must be run after the Kubernetes cluster is deployed.
+}
+
+resource "null_resource" "launch_svc_url" {
+  for_each = var.auto_launch_eclwatch && try(helm_release.hpcc[0].status, "") == "deployed" ? local.web_urls : {}
+
+  provisioner "local-exec" {
+    command     = local.is_windows_os ? "Start-Process ${each.value}" : "open ${each.value}"
+    interpreter = local.is_windows_os ? ["PowerShell", "-Command"] : ["/bin/bash", "-c"]
+  }
 }

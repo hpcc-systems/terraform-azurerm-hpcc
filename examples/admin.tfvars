@@ -92,3 +92,6 @@ elk = {
 
 # disable_naming_conventions - Disable naming conventions
 # Example: disable_naming_conventions = true 
+
+# auto_launch_eclwatch - Automatically launch ECLWatch web interface.
+# Example: auto_launch_eclwatch = true

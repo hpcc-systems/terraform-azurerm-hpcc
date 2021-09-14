@@ -12,6 +12,12 @@ variable "expose_services" {
   default     = false
 }
 
+variable "auto_launch_eclwatch" {
+  description = "Auto launch ELCWatch after each connection to the cluster."
+  type        = bool
+  default     = false
+}
+
 variable "auto_connect" {
   description = "Automatically connect to the Kubernetes cluster from the host machine by overwriting the current context."
   type        = bool
