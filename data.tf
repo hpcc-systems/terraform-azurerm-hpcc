@@ -12,7 +12,7 @@ data "azurerm_subscription" "current" {
 }
 
 data "azurerm_storage_account" "hpccsa" {
-  count = can(var.storage.account.storage_account_name) ? 1 : 0
+  count = can(var.storage.storage_account_name) ? 1 : 0
 
   name                = var.storage.storage_account_name
   resource_group_name = var.storage.resource_group_name
