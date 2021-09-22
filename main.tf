@@ -333,7 +333,7 @@ resource "null_resource" "launch_svc_url" {
   for_each = var.auto_launch_eclwatch && try(helm_release.hpcc[0].status, "") == "deployed" ? local.web_urls : {}
 
   provisioner "local-exec" {
-    command     = local.is_windows_os ? "Start-Process ${each.value}" : try("open ${each.value}", "xdg-open ${each.value}")
+    command     = local.is_windows_os ? "Start-Process ${each.value}" : "open ${each.value} || xdg-open ${each.value}"
     interpreter = local.is_windows_os ? ["PowerShell", "-Command"] : ["/bin/bash", "-c"]
   }
 }
