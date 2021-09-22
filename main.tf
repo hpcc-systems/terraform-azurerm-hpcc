@@ -93,7 +93,7 @@ module "virtual_network" {
 }
 
 resource "azurerm_private_endpoint" "pe" {
-  count = can(var.storage.storage_account_name) ? 1 : 0
+  count = can(var.storage.storage_account.name) ? 1 : 0
 
   name                = "sa_endpoint"
   location            = var.resource_group.location
@@ -145,14 +145,14 @@ module "kubernetes" {
 }
 
 resource "kubernetes_secret" "sa_secret" {
-  count = can(var.storage.storage_account_name) ? 1 : 0
+  count = can(var.storage.storage_account.name) ? 1 : 0
 
   metadata {
     name = "azure-secret"
   }
 
   data = {
-    "azurestorageaccountname" = var.storage.storage_account_name
+    "azurestorageaccountname" = var.storage.storage_account.name
     "azurestorageaccountkey"  = data.azurerm_storage_account.hpccsa[0].primary_access_key
   }
 
@@ -231,7 +231,7 @@ resource "helm_release" "storage" {
 
   name                       = "azstorage"
   chart                      = local.storage_chart
-  values                     = concat(can(var.storage.storage_account_name) ? [file("${path.root}/values/hpcc-azurefile.yaml")] : [], try([for v in var.storage.values : file(v)], []))
+  values                     = concat(can(var.storage.storage_account.name) ? [file("${path.root}/values/hpcc-azurefile.yaml")] : [], try([for v in var.storage.values : file(v)], []))
   create_namespace           = true
   namespace                  = try(var.hpcc.namespace, terraform.workspace)
   atomic                     = try(var.storage.atomic, null)
@@ -250,7 +250,7 @@ resource "helm_release" "storage" {
 }
 
 resource "azurerm_public_ip" "public_ip" {
-  count = can(var.storage.storage_account_name) ? 1 : 0
+  count = can(var.storage.storage_account.name) ? 1 : 0
 
   name                = "private_link_public_ip"
   sku                 = "Standard"
@@ -260,7 +260,7 @@ resource "azurerm_public_ip" "public_ip" {
 }
 
 resource "azurerm_lb" "private_link_lb" {
-  count = can(var.storage.storage_account_name) ? 1 : 0
+  count = can(var.storage.storage_account.name) ? 1 : 0
 
   name                = "private_link_lb"
   sku                 = "Standard"
@@ -274,14 +274,14 @@ resource "azurerm_lb" "private_link_lb" {
 }
 
 resource "azurerm_private_link_service" "private_link_svc" {
-  count = can(var.storage.storage_account_name) ? 1 : 0
+  count = can(var.storage.storage_account.name) ? 1 : 0
 
   name                = "sa_privatelink"
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
 
-  auto_approval_subscription_ids              = [data.azurerm_subscription.current.subscription_id]
-  visibility_subscription_ids                 = [data.azurerm_subscription.current.subscription_id]
+  auto_approval_subscription_ids              = try([data.azurerm_subscription.current.subscription_id, var.storage.storage_account.subscription_id], [data.azurerm_subscription.current.subscription_id])
+  visibility_subscription_ids                 = try([data.azurerm_subscription.current.subscription_id, var.storage.storage_account.subscription_id], [data.azurerm_subscription.current.subscription_id])
   load_balancer_frontend_ip_configuration_ids = [azurerm_lb.private_link_lb[0].frontend_ip_configuration.0.id]
 
   nat_ip_configuration {
@@ -333,7 +333,7 @@ resource "null_resource" "launch_svc_url" {
   for_each = var.auto_launch_eclwatch && try(helm_release.hpcc[0].status, "") == "deployed" ? local.web_urls : {}
 
   provisioner "local-exec" {
-    command     = local.is_windows_os ? "Start-Process ${each.value}" : "open ${each.value}"
+    command     = local.is_windows_os ? "Start-Process ${each.value}" : try("open ${each.value}", "xdg-open ${each.value}")
     interpreter = local.is_windows_os ? ["PowerShell", "-Command"] : ["/bin/bash", "-c"]
   }
 }

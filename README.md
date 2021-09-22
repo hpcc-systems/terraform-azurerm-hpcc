@@ -203,8 +203,8 @@ Usage Example:
             spot_max_price      = -1
         }
     }
-
 <br>
+
 ### The `image_root` argument:
 This block contains information about the HPCC image to use. This block is optional.
 
@@ -324,8 +324,8 @@ This block automatically connect your cluster to your local machine similarly to
 ### The `auto_connect` argument:
 This block automatically launch the ECLWatch interface.
 
- | Name         | Description                                                                                               | Type | Default | Required |
- | ------------ | --------------------------------------------------------------------------------------------------------- | ---- | ------- | :------: |
+ | Name                 | Description                                  | Type | Default | Required |
+ | -------------------- | -------------------------------------------- | ---- | ------- | :------: |
  | auto_launch_eclwatch | Automatically launch the ECLWatch interface. | bool | `false` |    no    |
 <br>
 
