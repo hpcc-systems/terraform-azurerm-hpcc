@@ -47,64 +47,44 @@ module "resource_group" {
 }
 
 module "virtual_network" {
-  source = "github.com/Azure-Terraform/terraform-azurerm-virtual-network.git?ref=v2.9.0"
+  source = "github.com/Azure-Terraform/terraform-azurerm-virtual-network.git?ref=v5.0.0"
 
-  naming_rules = var.disable_naming_conventions ? "" : module.naming.yaml
+  count = can(var.virtual_network.aks_public_subnet_id) ? 0 : 1
 
-  resource_group_name = module.resource_group.name
-  location            = var.resource_group.location
+  naming_rules = module.naming.yaml
+
+  resource_group_name = local.resource_group.name
+  location            = local.resource_group.location
   names               = local.names
   tags                = local.tags
 
+  enforce_subnet_names = false
+
   address_space = ["10.1.0.0/22"]
-
-  subnets = {
-    iaas-private = {
-      cidrs                   = ["10.1.0.0/24"]
-      route_table_association = "default"
-      configure_nsg_rules     = false
-      service_endpoints       = ["Microsoft.Storage"]
-    }
-
-    iaas-public = {
-      cidrs                                          = ["10.1.1.0/24"]
-      route_table_association                        = "default"
-      configure_nsg_rules                            = false
-      enforce_private_link_endpoint_network_policies = true
-      enforce_private_link_service_network_policies  = true
-    }
-  }
-
-  route_tables = {
-    default = {
-      disable_bgp_route_propagation = true
-      routes = {
-        internet = {
-          address_prefix = "0.0.0.0/0"
-          next_hop_type  = "Internet"
-        }
-        local-vnet = {
-          address_prefix = "10.1.0.0/22"
-          next_hop_type  = "vnetlocal"
+  aks_subnets = {
+    hpcc = {
+      private = {
+        cidrs             = ["10.1.3.0/25"]
+        service_endpoints = ["Microsoft.Storage"]
+      }
+      public = {
+        cidrs             = ["10.1.3.128/25"]
+        service_endpoints = ["Microsoft.Storage"]
+      }
+      route_table = {
+        disable_bgp_route_propagation = true
+        routes = {
+          internet = {
+            address_prefix = "0.0.0.0/0"
+            next_hop_type  = "Internet"
+          }
+          local-vnet-10-1-0-0-21 = {
+            address_prefix = "10.1.0.0/21"
+            next_hop_type  = "vnetlocal"
+          }
         }
       }
     }
-  }
-}
-
-resource "azurerm_private_endpoint" "pe" {
-  count = can(var.storage.storage_account.name) ? 1 : 0
-
-  name                = "sa_endpoint"
-  location            = var.resource_group.location
-  resource_group_name = module.resource_group.name
-  subnet_id           = module.virtual_network.subnets["iaas-public"].id
-
-  private_service_connection {
-    name                           = "sa_privateserviceconnection"
-    private_connection_resource_id = data.azurerm_storage_account.hpccsa[0].id
-    subresource_names              = ["file"]
-    is_manual_connection           = false
   }
 }
 
@@ -112,10 +92,10 @@ module "kubernetes" {
   source = "github.com/Azure-Terraform/terraform-azurerm-kubernetes.git?ref=v4.2.1"
 
   cluster_name        = local.cluster_name
-  location            = var.resource_group.location
+  location            = local.resource_group.location
   names               = local.names
   tags                = local.tags
-  resource_group_name = module.resource_group.name
+  resource_group_name = local.resource_group.name
   identity_type       = "UserAssigned" # Allowed values: UserAssigned or SystemAssigned
 
   rbac = {
@@ -129,13 +109,13 @@ module "kubernetes" {
   virtual_network = {
     subnets = {
       private = {
-        id = module.virtual_network.subnets["iaas-private"].id
+        id = local.aks_private_subnet_id
       }
       public = {
-        id = module.virtual_network.subnets["iaas-public"].id
+        id = local.aks_public_subnet_id
       }
     }
-    route_table_id = module.virtual_network.route_tables["default"].id
+    route_table_id = local.aks_route_table_id
   }
 
   node_pools = var.node_pools
@@ -249,58 +229,7 @@ resource "helm_release" "storage" {
   ]
 }
 
-resource "azurerm_public_ip" "public_ip" {
-  count = can(var.storage.storage_account.name) ? 1 : 0
-
-  name                = "private_link_public_ip"
-  sku                 = "Standard"
-  location            = module.resource_group.location
-  resource_group_name = module.resource_group.name
-  allocation_method   = "Static"
-}
-
-resource "azurerm_lb" "private_link_lb" {
-  count = can(var.storage.storage_account.name) ? 1 : 0
-
-  name                = "private_link_lb"
-  sku                 = "Standard"
-  location            = module.resource_group.location
-  resource_group_name = module.resource_group.name
-
-  frontend_ip_configuration {
-    name                 = azurerm_public_ip.public_ip[0].name
-    public_ip_address_id = azurerm_public_ip.public_ip[0].id
-  }
-}
-
-resource "azurerm_private_link_service" "private_link_svc" {
-  count = can(var.storage.storage_account.name) ? 1 : 0
-
-  name                = "sa_privatelink"
-  resource_group_name = module.resource_group.name
-  location            = module.resource_group.location
-
-  auto_approval_subscription_ids              = try([data.azurerm_subscription.current.subscription_id, var.storage.storage_account.subscription_id], [data.azurerm_subscription.current.subscription_id])
-  visibility_subscription_ids                 = try([data.azurerm_subscription.current.subscription_id, var.storage.storage_account.subscription_id], [data.azurerm_subscription.current.subscription_id])
-  load_balancer_frontend_ip_configuration_ids = [azurerm_lb.private_link_lb[0].frontend_ip_configuration.0.id]
-
-  nat_ip_configuration {
-    name                       = "primary"
-    private_ip_address         = "10.1.1.17"
-    private_ip_address_version = "IPv4"
-    subnet_id                  = module.virtual_network.subnets["iaas-public"].id
-    primary                    = true
-  }
-
-  nat_ip_configuration {
-    name                       = "secondary"
-    private_ip_address         = "10.1.1.18"
-    private_ip_address_version = "IPv4"
-    subnet_id                  = module.virtual_network.subnets["iaas-public"].id
-    primary                    = false
-  }
-}
-
+/*
 resource "azurerm_network_security_rule" "ingress_internet" {
   count = var.expose_services ? 1 : 0
 
@@ -313,10 +242,10 @@ resource "azurerm_network_security_rule" "ingress_internet" {
   destination_port_ranges     = ["8010", "5601"]
   source_address_prefix       = "Internet"
   destination_address_prefix  = "*"
-  resource_group_name         = module.virtual_network.subnets["iaas-public"].resource_group_name
-  network_security_group_name = module.virtual_network.subnets["iaas-public"].network_security_group_name
+  resource_group_name         = local.resource_group.name
+  network_security_group_name = module.virtual_network.aks["hpcc"].subnets.public.network_security_group_name
 }
-
+*/
 
 resource "null_resource" "az" {
   count = var.auto_connect ? 1 : 0

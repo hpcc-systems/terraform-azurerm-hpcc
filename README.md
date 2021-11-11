@@ -1,10 +1,9 @@
 # Azure - HPCC AKS Root Module
 <br>
 
-# ** DO NOT USE IN PRODUCTION **
+This module might not satisfy all the cloud policies of your organization. Please contact your site reliability engineer team before using it in production.
 <br>
 <br>
-
 
 ## Introduction
 
