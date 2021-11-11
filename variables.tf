@@ -82,6 +82,12 @@ variable "resource_group" {
   }
 }
 
+variable "virtual_network" {
+  description = "Virtual network attributes."
+  type        = any
+  default     = null
+}
+
 variable "node_pools" {
   description = "node pools"
   type        = any # top level keys are node pool names, sub-keys are subset of node_pool_defaults keys

@@ -5,9 +5,9 @@ admin = {
 
 metadata = {
   project             = "hpccdemo"
-  product_name        = "contosoweb"
+  product_name        = "aks"
   business_unit       = "commercial"
-  environment         = "dev"
+  environment         = "sandbox"
   market              = "us"
   product_group       = "contoso"
   resource_group_type = "app"
@@ -19,79 +19,117 @@ tags = { "justification" = "testing" }
 
 resource_group = {
   unique_name = true
-  location    = "eastus2"
+  # location    = "eastus"
 }
 
 node_pools = {
   system = {
-    vm_size             = "Standard_B2s"
-    node_count          = 1
-    enable_auto_scaling = true
-    min_count           = 1
-    max_count           = 2
+    vm_size                      = "Standard_D4_v4"
+    node_count                   = 1
+    enable_auto_scaling          = true
+    only_critical_addons_enabled = true
+    min_count                    = 1
+    max_count                    = 2
+    availability_zones           = []
+    subnet                       = "private"
   }
 
   addpool1 = {
-    vm_size             = "Standard_B2ms"
+    vm_size             = "Standard_D4_v4"
     enable_auto_scaling = true
     min_count           = 1
     max_count           = 2
+    availability_zones  = []
+    subnet              = "public"
+    priority            = "Regular"
+    spot_max_price      = -1
   }
 
   addpool2 = {
-    vm_size             = "Standard_B2ms"
+    vm_size             = "Standard_D4_v4"
     enable_auto_scaling = true
     min_count           = 1
-    max_count           = 3
+    max_count           = 2
+    availability_zones  = []
+    subnet              = "public"
+    priority            = "Regular"
+    spot_max_price      = -1
   }
 }
 
-hpcc = {
-  version   = "8.2.12-rc1"
-  namespace = "default"
-  name      = "myhpcck8s"
-  # chart     = ""
-  # values    = []
-}
+# CHARTS 
+# .......................
 
-storage = {
-  storage_account_name = "hpccdemohpccsa1"
-  resource_group_name  = "app-hpccdemo-sandbox-canadacentral-62827"
-  # subscription_id     = ""
-  # chart  = ""
-  # values = []
+hpcc = {
+  version = "8.4.14-rc1"
+  name    = "myhpcck8s"
+  atomic  = true
+  timeout = 340
 }
 
 elk = {
-  enable = true
+  enable = false
   name   = "myhpccelk"
   # chart  = ""
   # values = ""
 }
 
+storage = {
+  default = false
+  # chart  = ""
+  # values = []
+  /*
+  storage_account = {
+    location            = "eastus"
+    name                = "demohpccsa3"
+    resource_group_name = "app-storageaccount-sandbox-eastus-48936"
+    # subscription_id     = ""
+  }
+  */
+}
+
+auto_connect               = true
+auto_launch_eclwatch       = true
+disable_naming_conventions = false # true will enforce all metadata inputs below
+expose_services            = true
+# image_root    = "hpccdemo"
+# image_name    = "platform-core"
+# image_version = "8.2.12"
+
+
 # Optional Attributes
 # -------------------
 # expose_services - Expose ECLWatch and ELK to the internet. This can be unsafe and may not be supported by your organization. 
 # Setting this to true can cause eclwatch service to stick in a pending state. Only use this if you know what you are doing.
-# Example: expose_services = true
+# expose_services = true
 
 # image_root - Root of the image other than hpccsystems
-# Example: image_root = "foo"
+#  image_root = "foo"
 
 # image_name - Name of the image other than platform-core
-# Example: image_name = "bar"
+# image_name = "bar"
 
 # image_version - Version of the image
-# Example: image_version = "bar"
+# image_version = "bar"
 
 # auto_connect - Automatically connect to the kubernetes cluster from the host machine.
-# Example: auto_connect = true 
+# auto_connect = true 
 
 # disable_helm - Disable Helm deployments by Terraform. This is reserved for experimentation with other deployment tools like Flux2.
-# Example: disable_helm = false 
+# disable_helm = false 
 
 # disable_naming_conventions - Disable naming conventions
-# Example: disable_naming_conventions = true 
+# disable_naming_conventions = true 
 
 # auto_launch_eclwatch - Automatically launch ECLWatch web interface.
-# Example: auto_launch_eclwatch = true
+# auto_launch_eclwatch = true
+
+/*
+  # Provide an existing virtual network deployed outside of this project
+  virtual_network = {
+    private_subnet_id = ""
+    public_subnet_id  = ""
+    route_table_id    = ""
+    location          = ""
+  }
+*/
