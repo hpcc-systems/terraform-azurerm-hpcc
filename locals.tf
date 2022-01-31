@@ -18,7 +18,7 @@ locals {
 
   hpcc_repository    = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-${var.hpcc.version}.tgz"
   storage_repository = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-azurefile-0.1.0.tgz"
-  elk_repository     = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/elastic4hpcclogs-1.0.0.tgz"
+  elk_repository     = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/elastic4hpcclogs-1.2.0.tgz"
 
   hpcc_chart      = can(var.hpcc.chart) ? var.hpcc.chart : local.hpcc_repository
   storage_chart   = can(var.storage.chart) ? var.storage.chart : local.storage_repository
