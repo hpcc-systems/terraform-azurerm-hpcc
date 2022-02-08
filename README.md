@@ -1,7 +1,7 @@
 # Azure - HPCC AKS Root Module
 <br>
 
-This module might not satisfy your organization's cloud policies. It was purposely not designed to be run in production. Please contact your site reliability engineer team before using it in production. However, this module can be used as a blueprint to develope your own production version that meets your organization's requirements.
+This module is intended as an example for development and test systems only. It can be used as a blueprint to develope your own production version that meets your organization's security requirements.
 <br>
 <br>
 
@@ -106,10 +106,9 @@ The tag attribute can be used for additional tags. The tags must be key value pa
 ### The `resource_group` block:
 This block creates a resource group (like a folder) for your resources. This block is required.
 
- | Name        | Description                                                       | Type   | Default | Required |
- | ----------- | ----------------------------------------------------------------- | ------ | ------- | :------: |
- | unique_name | Will concatenate a number at the end of your resource group name. | bool   | `true`  |   yes    |
- | location    | Cloud region in which to deploy the cluster resources.            | string | null    |   yes    |
+ | Name        | Description                                                       | Type | Default | Required |
+ | ----------- | ----------------------------------------------------------------- | ---- | ------- | :------: |
+ | unique_name | Will concatenate a number at the end of your resource group name. | bool | `true`  |   yes    |
 <br>
 
 Usage Example:
@@ -117,7 +116,6 @@ Usage Example:
 
     resource_group = {
         unique_name = true
-        location    = "canadacentral"
     }
 
 <br>
@@ -130,7 +128,7 @@ This block imports metadata of a virtual network deployed outside of this projec
  | private_subnet_id | The ID of the private subnet.           | string | -       |   yes    |
  | public_subnet_id  | The ID of the public subnet.            | string | -       |   yes    |
  | route_table_id    | The ID  of the route table for the AKS. | string | -       |   yes    |
- | location          | The location of the virtual network     | string | -       |    no    |
+ | location          | The location of the virtual network     | string | -       |   yes    |
 <br>
 
 Usage Example:

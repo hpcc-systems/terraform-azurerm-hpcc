@@ -78,7 +78,6 @@ variable "resource_group" {
 
   default = {
     unique_name = true
-    location    = null
   }
 }
 

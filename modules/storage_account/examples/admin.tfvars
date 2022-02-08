@@ -19,7 +19,6 @@ tags = { "justification" = "testing" }
 
 resource_group = {
   unique_name = true
-  # location    = "eastus"
 }
 
 storage = {

@@ -19,7 +19,6 @@ tags = { "justification" = "testing" }
 
 resource_group = {
   unique_name = true
-  # location    = "eastus"
 }
 
 node_pools = {
@@ -37,6 +36,7 @@ node_pools = {
   addpool1 = {
     vm_size             = "Standard_D4_v4"
     enable_auto_scaling = true
+    node_count          = 2
     min_count           = 1
     max_count           = 2
     availability_zones  = []
@@ -48,6 +48,7 @@ node_pools = {
   addpool2 = {
     vm_size             = "Standard_D4_v4"
     enable_auto_scaling = true
+    node_count          = 2
     min_count           = 1
     max_count           = 2
     availability_zones  = []
@@ -64,7 +65,6 @@ hpcc = {
   version = "8.4.14-rc1"
   name    = "myhpcck8s"
   atomic  = true
-  timeout = 340
 }
 
 elk = {
@@ -88,20 +88,12 @@ storage = {
   */
 }
 
-auto_connect               = true
-auto_launch_eclwatch       = true
-disable_naming_conventions = false # true will enforce all metadata inputs below
-expose_services            = true
-# image_root    = "hpccdemo"
-# image_name    = "platform-core"
-# image_version = "8.2.12"
-
-
 # Optional Attributes
 # -------------------
+
 # expose_services - Expose ECLWatch and ELK to the internet. This can be unsafe and may not be supported by your organization. 
 # Setting this to true can cause eclwatch service to stick in a pending state. Only use this if you know what you are doing.
-# expose_services = true
+expose_services = true
 
 # image_root - Root of the image other than hpccsystems
 #  image_root = "foo"
@@ -113,7 +105,7 @@ expose_services            = true
 # image_version = "bar"
 
 # auto_connect - Automatically connect to the kubernetes cluster from the host machine.
-# auto_connect = true 
+auto_connect = true
 
 # disable_helm - Disable Helm deployments by Terraform. This is reserved for experimentation with other deployment tools like Flux2.
 # disable_helm = false 
@@ -122,7 +114,7 @@ expose_services            = true
 # disable_naming_conventions = true 
 
 # auto_launch_eclwatch - Automatically launch ECLWatch web interface.
-# auto_launch_eclwatch = true
+auto_launch_eclwatch = true
 
 /*
   # Provide an existing virtual network deployed outside of this project

@@ -21,7 +21,7 @@ module "metadata" {
   naming_rules = module.naming.yaml
 
   market              = var.metadata.market
-  location            = local.resource_group.location
+  location            = local.virtual_network.location
   sre_team            = var.metadata.sre_team
   environment         = var.metadata.environment
   product_name        = var.metadata.product_name
@@ -37,7 +37,7 @@ module "resource_group" {
   source = "github.com/Azure-Terraform/terraform-azurerm-resource-group.git?ref=v2.0.0"
 
   unique_name = var.resource_group.unique_name
-  location    = local.resource_group.location
+  location    = local.virtual_network.location
   names       = local.names
   tags        = local.tags
 }

@@ -13,8 +13,8 @@ locals {
   ) : module.metadata.names
 
   tags            = var.disable_naming_conventions ? merge(var.tags, { "admin" = var.admin.name, "email" = var.admin.email, "workspace" = terraform.workspace }) : merge(module.metadata.tags, { "admin" = var.admin.name, "email" = var.admin.email, "workspace" = terraform.workspace }, try(var.tags))
-  subnet_list     = tomap({ "private_subnet_id" = data.external.vnet[0].result.private_subnet_id, "public_subnet_id" = data.external.vnet[0].result.public_subnet_id })
-  virtual_network = try(local.subnet_list, var.virtual_network)
+  tovnet          = tomap({ "private_subnet_id" = data.external.vnet[0].result.private_subnet_id, "public_subnet_id" = data.external.vnet[0].result.public_subnet_id, "location" = data.external.vnet[0].result.location })
+  virtual_network = try(local.tovnet, var.virtual_network)
   resource_group  = { location = try(var.resource_group.location, data.external.vnet[0].result.location) }
   storage_shares = { "dalishare" = var.storage.quotas.dali, "dllsshare" = var.storage.quotas.dll, "sashashare" = var.storage.quotas.sasha,
   "datashare" = var.storage.quotas.data, "lzshare" = var.storage.quotas.lz }
