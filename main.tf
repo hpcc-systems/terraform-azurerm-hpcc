@@ -100,7 +100,7 @@ resource "kubernetes_secret" "sa_secret" {
 resource "helm_release" "hpcc" {
   count = var.disable_helm ? 0 : 1
 
-  name                       = var.hpcc.name
+  name                       = local.hpcc_name
   chart                      = local.hpcc_chart
   create_namespace           = true
   namespace                  = try(var.hpcc.namespace, terraform.workspace)
@@ -148,7 +148,7 @@ resource "helm_release" "hpcc" {
 resource "helm_release" "elk" {
   count = var.disable_helm || !var.elk.enable ? 0 : 1
 
-  name                       = var.elk.name
+  name                       = local.elk_name
   namespace                  = try(var.hpcc.namespace, terraform.workspace)
   chart                      = local.elk_chart
   values                     = concat(try([for v in var.elk.values : file(v)], []), var.expose_services ? [file("${path.root}/values/elk.yaml")] : [])

@@ -1,7 +1,7 @@
 # Azure - HPCC AKS Root Module
 <br>
 
-This module is intended as an example for development and test systems only. It can be used as a blueprint to develope your own production version that meets your organization's security requirements.
+This module is intended as an example for development and test systems only. It can be used as a blueprint to develop your own production version that meets your organization's security requirements.
 <br>
 <br>
 
@@ -272,10 +272,10 @@ This block deploys the HPCC helm chart. This block is optional.
 
  | Name      | Description                                                             | Type         | Default                          | Required |
  | --------- | ----------------------------------------------------------------------- | ------------ | -------------------------------- | :------: |
- | chart     | Path to local chart directory name. Examples: ~/HPCC-Platform/helm/hpcc | string       | null                             |   yes    |
- | namespace | Namespace to use.                                                       | string       | default                          |   yes    |
- | name      | Release name of the chart.                                              | string       | `myhpcck8s`                      |   yes    |
- | values    | List of desired state files to use similar to -f in CLI.                | list(string) | `values-retained-azurefile.yaml` |   yes    |
+ | chart     | Path to local chart directory name. Examples: ~/HPCC-Platform/helm/hpcc | string       | null                             |    no    |
+ | namespace | Namespace to use.                                                       | string       | default                          |    no    |
+ | name      | Release name of the chart.                                              | string       | `myhpcck8s`                      |    no    |
+ | values    | List of desired state files to use similar to -f in CLI.                | list(string) | `values-retained-azurefile.yaml` |    no    |
  | version   | Version of the HPCC chart.                                              | string       | latest                           |   yes    |
 <br>
 
@@ -294,11 +294,13 @@ This block deploys the HPCC persistent volumes. This block is required.
 
  | Name            | Description                                                                                           | Type         | Default                                                | Valid Options    | Required |
  | --------------- | ----------------------------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------ | ---------------- | :------: |
- | default         | Use AKS provided storage account                                                                      | bool         | `false`                                                | `true` , `false` |   yes    |
- | chart           | Absolute path to local chart directory. Examples: ~/HPCC-Platform//helm/examples/azure/hpcc-azurefile | string       | null                                                   | yes              |
- | name            | Release name of the chart.                                                                            | string       | `myhpcck8s`                                            | yes              |
+ | default         | Use AKS provided storage account                                                                      | bool         | `false`                                                | `true` , `false` |    no    |
+ | chart           | Absolute path to local chart directory. Examples: ~/HPCC-Platform//helm/examples/azure/hpcc-azurefile | string       | null                                                   | no               |
+ | name            | Release name of the chart.                                                                            | string       | `myhpcck8s`                                            | no               |
  | values          | List of desired state files to use similar to -f in CLI.                                              | list(string) | []                                                     | no               |
  | storage_account | The storage account account to use.                                                                   | object       | Queries attributes' values from storage_account module | -                |    no    |
+ | version         | Version of the storage chart.                                                                         | string       | 0.1.0                                                  | no               |
+
 <br>
 
 ### The `storage_account` block:
@@ -333,12 +335,14 @@ Usage Example:
 ### The `elk` block:
 This block deploys the ELK chart. This block is optional.
 
- | Name   | Description                                                                                 | Type                       | Default | Required  |
- | ------ | ------------------------------------------------------------------------------------------- | -------------------------- | ------- | :-------: |
- | chart  | Path to local chart directory name. Examples: ./HPCC-Platform//helm/managed/logging/elastic | string                     | null    |    yes    |
- | enable | Enable ELK                                                                                  | bool                       | `true`  |    yes    |
- | name   | name                                                                                        | Release name of the chart. | string  | myhpccelk | yes |
- | values | List of desired state files to use similar to -f in CLI.                                    | list(string)               | -       |    yes    |
+ | Name    | Description                                                                                 | Type         | Default   | Required |
+ | ------- | ------------------------------------------------------------------------------------------- | ------------ | --------- | :------: |
+ | chart   | Path to local chart directory name. Examples: ./HPCC-Platform//helm/managed/logging/elastic | string       | null      |    no    |
+ | enable  | Enable ELK                                                                                  | bool         | `true`    |    no    |
+ | name    | Release name of the chart.                                                                  | string       | myhpccelk |    no    |
+ | values  | List of desired state files to use similar to -f in CLI.                                    | list(string) | -         |    no    |
+ | version | Version of the ELK chart.                                                                   | string       | 1.2.1     |    no    |
+
 <br>
 
 Usage Example:
