@@ -78,8 +78,13 @@ variable "resource_group" {
 
   default = {
     unique_name = true
-    location    = null
   }
+}
+
+variable "virtual_network" {
+  description = "Virtual network attributes."
+  type        = any
+  default     = null
 }
 
 variable "node_pools" {
