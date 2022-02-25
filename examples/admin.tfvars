@@ -67,13 +67,6 @@ hpcc = {
   atomic  = true
 }
 
-elk = {
-  enable = false
-  name   = "myhpccelk"
-  # chart  = ""
-  # values = ""
-}
-
 storage = {
   default = false
   # chart  = ""
@@ -124,4 +117,13 @@ auto_launch_eclwatch = true
     route_table_id    = ""
     location          = ""
   }
+*/
+
+/*
+elk = {
+  enable = false
+  name   = "myhpccelk"
+  chart  = ""
+  values = ""
+}
 */
