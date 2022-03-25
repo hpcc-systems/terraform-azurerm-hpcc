@@ -1,6 +1,6 @@
 admin = {
-  name  = "hpccdemo"
-  email = "hpccdemo@example.com"
+  name  = "shuri"
+  email = "shuri@blackgirlscode.com"
 }
 
 metadata = {
@@ -21,3 +21,9 @@ resource_group = {
   unique_name = true
   location    = "eastus"
 }
+
+# Optional Attributes
+# -------------------
+
+# Disable naming conventions
+# disable_naming_conventions = true 

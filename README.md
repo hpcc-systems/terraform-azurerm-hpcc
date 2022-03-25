@@ -49,8 +49,8 @@ Usage Example:
 <br>
 
     admin = {
-        name  = "Example"
-        email = "example@hpccdemo.com"
+        name  = "Shuri"
+        email = "shuri@blackgirlscode.com"
     }
 
 <br>
@@ -214,49 +214,82 @@ Usage Example:
             enable_auto_scaling          = true
             only_critical_addons_enabled = true
             min_count                    = 1
-            max_count                    = 2
+            max_count                    = 1
             availability_zones           = []
             subnet                       = "private"
+            enable_host_encryption       = false
+            enable_node_public_ip        = false
+            os_disk_type                 = "Managed"
+            type                         = "VirtualMachineScaleSets"
+            # max_pods             = 10
+            # node_labels          = {"engine" = "roxie", "engine" = "roxie"}
+            # orchestrator_version = "2.9.0"
+            # os_disk_size_gb      = 100
+            # tags                 = {"mynodepooltag1" = "mytagvalue1","mynodepooltag2" = "mytagvalue2"}
+
         }
 
         addpool1 = {
-            vm_size             = "Standard_D4_v4"
-            enable_auto_scaling = true
-            min_count           = 1
-            max_count           = 2
-            availability_zones  = []
-            subnet              = "public"
-            priority            = "Regular"
-            spot_max_price      = -1
+            vm_size                      = "Standard_D4_v4"
+            enable_auto_scaling          = true
+            node_count                   = 2
+            min_count                    = 1
+            max_count                    = 2
+            availability_zones           = []
+            subnet                       = "public"
+            priority                     = "Regular"
+            spot_max_price               = -1
+            max_surge                    = "1"
+            os_type                      = "Linux"
+            priority                     = "Regular"
+            enable_host_encryption       = false
+            enable_node_public_ip        = false
+            only_critical_addons_enabled = false
+            os_disk_type                 = "Managed"
+            type                         = "VirtualMachineScaleSets"
+            # orchestrator_version         = "2.9.0"
+            # os_disk_size_gb              = 100
+            # max_pods                     = 20
+            # node_labels                  = {"engine" = "roxie", "engine" = "roxie"}
+            # eviction_policy              = "Spot"
+            # node_taints                  = ["mytaint1", "mytaint2"]
+            # proximity_placement_group_id = "my_proximity_placement_group_id"
+            # spot_max_price               = 1
+            # tags                         = {"mynodepooltag1" = "mytagvalue1","mynodepooltag2" = "mytagvalue2"}
         }
 
         addpool2 = {
-            vm_size             = "Standard_D4_v4"
-            enable_auto_scaling = true
-            min_count           = 1
-            max_count           = 2
-            availability_zones  = []
-            subnet              = "public"
-            priority            = "Regular"
-            spot_max_price      = -1
+            vm_size                      = "Standard_D4_v4"
+            enable_auto_scaling          = true
+            node_count                   = 2
+            min_count                    = 1
+            max_count                    = 2
+            availability_zones           = []
+            subnet                       = "public"
+            priority                     = "Regular"
+            spot_max_price               = -1
+            max_surge                    = "1"
+            os_type                      = "Linux"
+            priority                     = "Regular"
+            enable_host_encryption       = false
+            enable_node_public_ip        = false
+            only_critical_addons_enabled = false
+            os_disk_type                 = "Managed"
+            type                         = "VirtualMachineScaleSets"
+            # orchestrator_version         = "2.9.0"
+            # os_disk_size_gb              = 100
+            # max_pods                     = 20
+            # node_labels                  = {"engine" = "roxie", "engine" = "roxie"}
+            # eviction_policy              = "Spot"
+            # node_taints                  = ["mytaint1", "mytaint2"]
+            # proximity_placement_group_id = "my_proximity_placement_group_id"
+            # spot_max_price               = 1
+            # tags                         = {"mynodepooltag1" = "mytagvalue1","mynodepooltag2" = "mytagvalue2"}
         }
     }
-<br>
 
-### The `image_root` argument:
-This block contains information about the HPCC image to use. This block is optional.
-
- | Name       | Description        | Type   | Default     | Required |
- | ---------- | ------------------ | ------ | ----------- | :------: |
- | image_root | Image root to use. | string | hpccsystems |    no    |
-<br>
-
-### The `image_name` argument:
-This block contains information about the HPCC image to use. This block is optional.
-
- | Name       | Description        | Type   | Default       | Required |
- | ---------- | ------------------ | ------ | ------------- | :------: |
- | image_name | Image name to use. | string | platform-core |    mo    |
+# CHARTS 
+# .......................
 <br>
 
 ### The `disable_helm` argument:
@@ -270,21 +303,55 @@ This block disable helm deployments by Terraform. This block is optional and wil
 ### The `hpcc` block:
 This block deploys the HPCC helm chart. This block is optional.
 
- | Name      | Description                                                             | Type         | Default                          | Required |
- | --------- | ----------------------------------------------------------------------- | ------------ | -------------------------------- | :------: |
- | chart     | Path to local chart directory name. Examples: ~/HPCC-Platform/helm/hpcc | string       | null                             |    no    |
- | namespace | Namespace to use.                                                       | string       | default                          |    no    |
- | name      | Release name of the chart.                                              | string       | `myhpcck8s`                      |    no    |
- | values    | List of desired state files to use similar to -f in CLI.                | list(string) | `values-retained-azurefile.yaml` |    no    |
- | version   | Version of the HPCC chart.                                              | string       | latest                           |   yes    |
+ | Name                       | Description                                                                                                                                       | Type         | Default                        | Required |
+ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------------------------------ | :------: |
+ | chart                      | Path to local chart directory name. Examples: ~/HPCC-Platform/helm/hpcc                                                                           | string       | null                           |    no    |
+ | namespace                  | Namespace to use.                                                                                                                                 | string       | default                        |    no    |
+ | name                       | Release name of the chart.                                                                                                                        | string       | myhpcck8s                      |    no    |
+ | values                     | List of desired state files to use similar to -f in CLI.                                                                                          | list(string) | values-retained-azurefile.yaml |    no    |
+ | version                    | Version of the HPCC chart.                                                                                                                        | string       | latest                         |   yes    |
+ | image_root                 | Image root to use.                                                                                                                                | string       | hpccsystems                    |    no    |
+ | image_name                 | Image name to use.                                                                                                                                | string       | platform-core                  |    no    |
+ | atomic                     | If set, installation process purges chart on fail. The `wait` flag will be set automatically if `atomic` is used.                                 | bool         | false                          |    no    |
+ | recreate_pods              | Perform pods restart during upgrade/rollback.                                                                                                     | bool         | false                          |    no    |
+ | reuse_values               | When upgrading, reuse the last release's values and merge in any overrides. If `reset_values` is specified, this is ignored.                      | bool         | false                          |    no    |
+ | reset_values               | When upgrading, reset the values to the ones built into the chart.                                                                                | bool         | false                          |    no    |
+ | force_update               | Force resource update through delete/recreate if needed.                                                                                          | bool         | false                          |    no    |
+ | cleanup_on_fail            | Allow deletion of new resources created in this upgrade when upgrade fails.                                                                       | bool         | false                          |    no    |
+ | disable_openapi_validation | If set, the installation process will not validate rendered templates against the Kubernetes OpenAPI Schema.                                      | bool         | false                          |    no    |
+ | max_history                | Maximum number of release versions stored per release.                                                                                            | number       | 0                              |    no    |
+ | wait                       | Will wait until all resources are in a ready state before marking the release as successful. It will wait for as long as `timeout` .              | bool         | true                           |    no    |
+ | dependency_update          | Runs helm dependency update before installing the chart.                                                                                          | bool         | false                          |    no    |
+ | timeout                    | Time in seconds to wait for any individual kubernetes operation (like Jobs for hooks).                                                            | number       | 900                            |    no    |
+ | wait_for_jobs              | If wait is enabled, will wait until all Jobs have been completed before marking the release as successful. It will wait for as long as `timeout`. | bool         | false                          |    no    |
+ | lint                       | Run the helm chart linter during the plan.                                                                                                        | bool         | false                          |    no    |
 <br>
 
  Usage Example:
  <br>
 
     hpcc = {
-        version = "8.2.16-rc2"
-        name   = "myhpcck8s"
+        version                    = "8.6.14-rc2"
+        name                       = "myhpcck8s"
+        atomic                     = true
+        recreate_pods              = false
+        resuse_values              = false
+        reset_values               = false
+        force_update               = false
+        namespace                  = "default"
+        cleanup_on_fail            = false
+        disable_openapi_validation = false
+        max_history                = 0
+        wait                       = true
+        dependency_update          = false
+        timeout                    = 900
+        wait_for_jobs              = false
+        lint                       = false
+        # chart   = "/Users/shuri/helm-chart/helm/hpcc"
+        # values  = ["/Users/shuri/mycustomvalues1.yaml", "/Users/shuri/mycustomvalues2.yaml"]
+        # image_root    = "west.blackgirlscode.com"
+        # image_name    = "platform-core-ln"
+        # image_version = "latest"
     }
 
 <br>
@@ -292,15 +359,28 @@ This block deploys the HPCC helm chart. This block is optional.
 ### The `storage` block:
 This block deploys the HPCC persistent volumes. This block is required.
 
- | Name            | Description                                                                                           | Type         | Default                                                | Valid Options    | Required |
- | --------------- | ----------------------------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------ | ---------------- | :------: |
- | default         | Use AKS provided storage account                                                                      | bool         | `false`                                                | `true` , `false` |    no    |
- | chart           | Absolute path to local chart directory. Examples: ~/HPCC-Platform//helm/examples/azure/hpcc-azurefile | string       | null                                                   | no               |
- | name            | Release name of the chart.                                                                            | string       | `myhpcck8s`                                            | no               |
- | values          | List of desired state files to use similar to -f in CLI.                                              | list(string) | []                                                     | no               |
- | storage_account | The storage account account to use.                                                                   | object       | Queries attributes' values from storage_account module | -                |    no    |
- | version         | Version of the storage chart.                                                                         | string       | 0.1.0                                                  | no               |
-
+ | Name                       | Description                                                                                                                                       | Type         | Default                                                | Valid Options    | Required |
+ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------ | ---------------- | :------: |
+ | default                    | Use AKS provided storage account?                                                                                                                 | bool         | `false`                                                | `true` , `false` |    no    |
+ | version                    | The version of the storage chart.                                                                                                                 | string       | 0.1.0                                                  |                  |    no    |
+ | chart                      | Absolute path to local chart directory. Examples: ~/HPCC-Platform//helm/examples/azure/hpcc-azurefile                                             | string       | null                                                   | no               |
+ | name                       | Release name of the chart.                                                                                                                        | string       | `myhpcck8s`                                            | no               |
+ | values                     | List of desired state files to use similar to -f in CLI.                                                                                          | list(string) | []                                                     | no               |
+ | storage_account            | The storage account account to use.                                                                                                               | object       | Queries attributes' values from storage_account module | -                |    no    |
+ | version                    | Version of the storage chart.                                                                                                                     | string       | 0.1.0                                                  | no               |
+ | atomic                     | If set, installation process purges chart on fail. The `wait` flag will be set automatically if `atomic` is used.                                 | bool         | false                                                  | no               |
+ | recreate_pods              | Perform pods restart during upgrade/rollback.                                                                                                     | bool         | false                                                  | no               |
+ | reuse_values               | When upgrading, reuse the last release's values and merge in any overrides. If `reset_values` is specified, this is ignored.                      | bool         | false                                                  | no               |
+ | reset_values               | When upgrading, reset the values to the ones built into the chart.                                                                                | bool         | false                                                  | no               |
+ | force_update               | Force resource update through delete/recreate if needed.                                                                                          | bool         | false                                                  | no               |
+ | cleanup_on_fail            | Allow deletion of new resources created in this upgrade when upgrade fails.                                                                       | bool         | false                                                  | no               |
+ | disable_openapi_validation | If set, the installation process will not validate rendered templates against the Kubernetes OpenAPI Schema.                                      | bool         | false                                                  | no               |
+ | max_history                | Maximum number of release versions stored per release.                                                                                            | number       | 0                                                      | no               |
+ | wait                       | Will wait until all resources are in a ready state before marking the release as successful. It will wait for as long as `timeout` .              | bool         | true                                                   | no               |
+ | dependency_update          | Runs helm dependency update before installing the chart.                                                                                          | bool         | false                                                  | no               |
+ | timeout                    | Time in seconds to wait for any individual kubernetes operation (like Jobs for hooks).                                                            | number       | 600                                                    | no               |
+ | wait_for_jobs              | If wait is enabled, will wait until all Jobs have been completed before marking the release as successful. It will wait for as long as `timeout`. | bool         | false                                                  | no               |
+ | lint                       | Run the helm chart linter during the plan.                                                                                                        | bool         | false                                                  | no               |
 <br>
 
 ### The `storage_account` block:
@@ -318,57 +398,104 @@ Usage Example:
 <br>
 
     storage = {
-        default = false
-        # chart  = ""
-        # values = []
-
+        default                    = false
+        version                    = "0.1.0"
+        atomic                     = true
+        recreate_pods              = false
+        resuse_values              = false
+        reset_values               = false
+        force_update               = false
+        namespace                  = "default"
+        cleanup_on_fail            = false
+        disable_openapi_validation = false
+        max_history                = 0
+        wait                       = true
+        dependency_update          = false
+        timeout                    = 600
+        wait_for_jobs              = false
+        lint                       = false
+        # chart  = "/Users/shuri/helm-chart/helm/example/azure/hpcc-azurefile"
+        # values = ["/Users/shuri/mycustomvalues1.yaml", "/Users/shuri/mycustomvalues2.yaml"]
+        /*
         storage_account = {
             location            = "eastus"
-            name                = "hpccsa3"
+            name                = "shurihpccsa3"
             resource_group_name = "app-storageaccount-sandbox-eastus-48936"
-            # subscription_id     = ""
+            # subscription_id   = "value"
         }
+        */
     }
 
 <br>
 
-### The `elk` block:
-This block deploys the ELK chart. This block is optional.
+### The `elastic4hpcclogs` block:
+This block deploys the elastic4hpcclogs chart. This block is optional.
 
- | Name    | Description                                                                                 | Type         | Default   | Required |
- | ------- | ------------------------------------------------------------------------------------------- | ------------ | --------- | :------: |
- | chart   | Path to local chart directory name. Examples: ./HPCC-Platform//helm/managed/logging/elastic | string       | null      |    no    |
- | enable  | Enable ELK                                                                                  | bool         | `true`    |    no    |
- | name    | Release name of the chart.                                                                  | string       | myhpccelk |    no    |
- | values  | List of desired state files to use similar to -f in CLI.                                    | list(string) | -         |    no    |
- | version | Version of the ELK chart.                                                                   | string       | 1.2.1     |    no    |
+ | Name                       | Description                                                                                                                                       | Type         | Default            | Required |
+ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------------------ | :------: |
+ | chart                      | Path to local chart directory name. Examples: ./HPCC-Platform//helm/managed/logging/elastic                                                       | string       | null               |    no    |
+ | enable                     | Enable elastic4hpcclogs                                                                                                                           | bool         | `true`             |    no    |
+ | name                       | Release name of the chart.                                                                                                                        | string       | myelastic4hpcclogs |    no    |
+ | version                    | The version of the elastic4hpcclogs                                                                                                               | string       | 1.2.8              |          | no |
+ | values                     | List of desired state files to use similar to -f in CLI.                                                                                          | list(string) | -                  |    no    |
+ | version                    | Version of the elastic4hpcclogs chart.                                                                                                            | string       | 1.2.1              |    no    |
+ | atomic                     | If set, installation process purges chart on fail. The `wait` flag will be set automatically if `atomic` is used.                                 | bool         | false              |    no    |
+ | recreate_pods              | Perform pods restart during upgrade/rollback.                                                                                                     | bool         | false              |    no    |
+ | reuse_values               | When upgrading, reuse the last release's values and merge in any overrides. If `reset_values` is specified, this is ignored.                      | bool         | false              |    no    |
+ | reset_values               | When upgrading, reset the values to the ones built into the chart.                                                                                | bool         | false              |    no    |
+ | force_update               | Force resource update through delete/recreate if needed.                                                                                          | bool         | false              |    no    |
+ | cleanup_on_fail            | Allow deletion of new resources created in this upgrade when upgrade fails.                                                                       | bool         | false              |    no    |
+ | disable_openapi_validation | If set, the installation process will not validate rendered templates against the Kubernetes OpenAPI Schema.                                      | bool         | false              |    no    |
+ | max_history                | Maximum number of release versions stored per release.                                                                                            | number       | 0                  |    no    |
+ | wait                       | Will wait until all resources are in a ready state before marking the release as successful. It will wait for as long as `timeout` .              | bool         | true               |    no    |
+ | dependency_update          | Runs helm dependency update before installing the chart.                                                                                          | bool         | false              |    no    |
+ | timeout                    | Time in seconds to wait for any individual kubernetes operation (like Jobs for hooks).                                                            | number       | 900                |    no    |
+ | wait_for_jobs              | If wait is enabled, will wait until all Jobs have been completed before marking the release as successful. It will wait for as long as `timeout`. | bool         | false              |    no    |
+ | lint                       | Run the helm chart linter during the plan.                                                                                                        | bool         | false              |    no    |
 
 <br>
 
 Usage Example:
 <br>
 
-    elk = {
-        enable = false
-        name   = "myhpccelk"
+    elastic4hpcclogs = {
+        enable                     = true
+        name                       = "myelastic4hpcclogs"
+        atomic                     = true
+        recreate_pods              = false
+        reuse_values              = false
+        reset_values               = false
+        force_update               = false
+        namespace                  = "default"
+        cleanup_on_fail            = false
+        disable_openapi_validation = false
+        max_history                = 0
+        wait                       = true
+        dependency_update          = false
+        timeout                    = 900
+        wait_for_jobs              = false
+        lint                       = false
+        timeout                    = 900
+        # chart  = "/Users/shuri/helm-chart/helm/managed/logging/elastic"
+        # values = ["/Users/shuri/mycustomvalues1.yaml","/Users/shuri/mycustomvalues2.yaml"]
     }
 
 <br>
 
-The `hpcc`, `storage` and `elk` blocks also support the following arguments:
+The `hpcc`, `storage` and `elastic4hpcclogs` blocks also support the following arguments:
 <br>
 
-| Name                       | Optional, Required | Description                                                                                                                                                        |
-| -------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| atomic                     | Optional           | If set, installation process purges chart on fail. The wait flag will be set automatically if atomic is used. Defaults to false.                                   |
-| recreate_pods              | Optional           | Perform pods restart during upgrade/rollback. Defaults to false.                                                                                                   |
-| cleanup_on_fail            | Optional           | Allow deletion of new resources created in this upgrade when upgrade fails. Defaults to false.                                                                     |
-| disable_openapi_validation | Optional           | If set, the installation process will not validate rendered templates against the Kubernetes OpenAPI Schema. Defaults to false.                                    |
-| wait                       | Optional           | Will wait until all resources are in a ready state before marking the release as successful. It will wait for as long as timeout. Defaults to false.               |
-| dependency_update          | Optional           | Runs helm dependency update before installing the chart. Defaults to false.                                                                                        |
-| timeout                    | Optional           | Time in seconds to wait for any individual Kubernetes operation (like Jobs for hooks). Defaults to 900 seconds for hpcc and 600 seconds for storage and elk.       |
-| wait_for_jobs              | Optional           | If wait is enabled, will wait until all Jobs have been completed before marking the release as successful. It will wait for as long as timeout. Defaults to false. |
-| lint                       | Optional           | Run the helm chart linter during the plan. Defaults to false.                                                                                                      |
+| Name                       | Optional, Required | Description                                                                                                                                                               |
+| -------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| atomic                     | Optional           | If set, installation process purges chart on fail. The wait flag will be set automatically if atomic is used. Defaults to false.                                          |
+| recreate_pods              | Optional           | Perform pods restart during upgrade/rollback. Defaults to false.                                                                                                          |
+| cleanup_on_fail            | Optional           | Allow deletion of new resources created in this upgrade when upgrade fails. Defaults to false.                                                                            |
+| disable_openapi_validation | Optional           | If set, the installation process will not validate rendered templates against the Kubernetes OpenAPI Schema. Defaults to false.                                           |
+| wait                       | Optional           | Will wait until all resources are in a ready state before marking the release as successful. It will wait for as long as timeout. Defaults to false.                      |
+| dependency_update          | Optional           | Runs helm dependency update before installing the chart. Defaults to false.                                                                                               |
+| timeout                    | Optional           | Time in seconds to wait for any individual Kubernetes operation (like Jobs for hooks). Defaults to 900 seconds for hpcc and 600 seconds for storage and elastic4hpcclogs. |
+| wait_for_jobs              | Optional           | If wait is enabled, will wait until all Jobs have been completed before marking the release as successful. It will wait for as long as timeout. Defaults to false.        |
+| lint                       | Optional           | Run the helm chart linter during the plan. Defaults to false.                                                                                                             |
 <br>
 
 
@@ -389,11 +516,11 @@ This block automatically launch the ECLWatch interface.
 <br>
 
 ### The `expose_services` argument:
-Expose ECLWatch and ELK to the internet. This is unsafe and may not be supported by your organization. Setting this to `true` can cause eclwatch service to stick in a pending state.
+Expose ECLWatch and elastic4hpcclogs to the internet. This is unsafe and may not be supported by your organization. Setting this to `true` can cause eclwatch service to stick in a pending state.
 
- | Name            | Description                              | Type | Default | Required |
- | --------------- | ---------------------------------------- | ---- | ------- | :------: |
- | expose_services | Expose ECLWatch and ELK to the internet. | bool | `false` |    no    |
+ | Name            | Description                                           | Type | Default | Required |
+ | --------------- | ----------------------------------------------------- | ---- | ------- | :------: |
+ | expose_services | Expose ECLWatch and elastic4hpcclogs to the internet. | bool | `false` |    no    |
 <br>
 
 

@@ -25,10 +25,10 @@ locals {
   storage_chart      = can(var.storage.chart) ? var.storage.chart : local.storage_repository
   storage_account    = try(try(var.storage.storage_account, data.external.sa[0].result), "")
 
-  elk_version    = can(var.elk.version) ? var.elk.version : "1.2.1"
-  elk_repository = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/elastic4hpcclogs-${local.elk_version}.tgz"
-  elk_chart      = can(var.elk.chart) ? var.elk.chart : local.elk_repository
-  elk_name       = can(var.elk.name) ? var.elk.name : "myhpccelk"
+  elastic4hpcclogs_version    = can(var.elastic4hpcclogs.version) ? var.elastic4hpcclogs.version : "1.2.8"
+  elastic4hpcclogs_repository = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/elastic4hpcclogs-${local.elastic4hpcclogs_version}.tgz"
+  elastic4hpcclogs_chart      = can(var.elastic4hpcclogs.chart) ? var.elastic4hpcclogs.chart : local.elastic4hpcclogs_repository
+  elastic4hpcclogs_name       = can(var.elastic4hpcclogs.name) ? var.elastic4hpcclogs.name : "myelastic4hpcclogs"
 
   az_command    = try("az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name} --overwrite", "")
   web_urls      = { auto_launch_eclwatch = "http://$(kubectl get svc --field-selector metadata.name=eclwatch | awk 'NR==2 {print $4}'):8010" }

@@ -1,6 +1,6 @@
-admin = {
-  name  = "hpccdemo"
-  email = "hpccdemo@example.com"
+  admin = {
+  name  = "shuri"
+  email = "shuri@blackgirlscode.com"
 }
 
 metadata = {
@@ -22,13 +22,23 @@ resource_group = {
 }
 
 storage = {
-  access_tier             = "Hot"
-  account_kind            = "StorageV2"
-  account_tier            = "Standard"
-  replication_type        = "LRS"
-  enable_large_file_share = true
+  access_tier                       = "Hot"
+  account_kind                      = "StorageV2"
+  account_tier                      = "Standard"
+  replication_type                  = "LRS"
+  enable_large_file_share           = true
+  enable_https_traffic_only         = true
+  traffic_bypass                    = ["Logging", "Metrics", "AzureServices"]
+  min_tls_version                   = "TLS1_2"
+  nfsv3_enable                      = false
+  infrastructure_encryption_enabled = false
+  shared_access_key_enabled         = true
+  enable_hns                        = false
+  allow_blob_public_access          = false
+  allow_host_ip                     = true
   # auto_approval_subscription_ids = []
 
+  # Quotas in Gigabytes
   quotas = {
     dali  = 1
     data  = 3
@@ -38,14 +48,18 @@ storage = {
   }
 }
 
-# disable_naming_conventions = false # true will enforce all the arguments of the metadata block above
+# Optional Attributes
+# -------------------
 
-# Provide an existing virtual network deployed outside of this project
+# Disable naming conventions
+# disable_naming_conventions = true 
+
 /*
+  # Grant access to an existing virtual network that was deployed outside of this project
   virtual_network = {
-    private_subnet_id = ""
-    public_subnet_id  = ""
-    route_table_id    = ""
-    location          = ""
+    private_subnet_id = "value"
+    public_subnet_id  = "value"
+    route_table_id    = "value"
+    location          = "value"
   }
 */

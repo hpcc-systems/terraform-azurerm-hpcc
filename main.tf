@@ -97,6 +97,26 @@ resource "kubernetes_secret" "sa_secret" {
   type = "Opaque"
 }
 
+resource "kubernetes_secret" "private_docker_registry" {
+  count = can(var.registry.server) && can(var.registry.username) && can(var.registry.password) ? 1 : 0
+  metadata {
+    name = "docker-cfg"
+  }
+  type = "kubernetes.io/dockerconfigjson"
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "${var.registry.server}" = {
+          "username" = var.registry.username
+          "password" = var.registry.password
+          "email"    = var.admin.email
+          "auth"     = base64encode("${var.registry.username}:${var.registry.password}")
+        }
+      }
+    })
+  }
+}
+
 resource "helm_release" "hpcc" {
   count = var.disable_helm ? 0 : 1
 
@@ -104,64 +124,81 @@ resource "helm_release" "hpcc" {
   chart                      = local.hpcc_chart
   create_namespace           = true
   namespace                  = try(var.hpcc.namespace, terraform.workspace)
-  atomic                     = try(var.hpcc.atomic, null)
-  recreate_pods              = try(var.hpcc.recreate_pods, null)
-  cleanup_on_fail            = try(var.hpcc.cleanup_on_fail, null)
-  disable_openapi_validation = try(var.hpcc.disable_openapi_validation, null)
-  wait                       = try(var.hpcc.wait, null)
-  dependency_update          = try(var.hpcc.dependency_update, null)
+  atomic                     = try(var.hpcc.atomic, false)
+  recreate_pods              = try(var.hpcc.recreate_pods, false)
+  reuse_values               = try(var.hpcc.reuse_values, false)
+  reset_values               = try(var.hpcc.reset_values, false)
+  force_update               = try(var.hpcc.force_update, false)
+  cleanup_on_fail            = try(var.hpcc.cleanup_on_fail, false)
+  disable_openapi_validation = try(var.hpcc.disable_openapi_validation, false)
+  max_history                = try(var.hpcc.max_history, 0)
+  wait                       = try(var.hpcc.wait, true)
+  dependency_update          = try(var.hpcc.dependency_update, false)
   timeout                    = try(var.hpcc.timeout, 900)
-  wait_for_jobs              = try(var.hpcc.wait_for_jobs, null)
-  lint                       = try(var.hpcc.lint, null)
+  wait_for_jobs              = try(var.hpcc.wait_for_jobs, false)
+  lint                       = try(var.hpcc.lint, false)
 
   values = concat(var.expose_services ? [file("${path.root}/values/esp.yaml")] : [],
   try([for v in var.hpcc.values : file(v)], []), [file("${path.root}/values/values-retained-azurefile.yaml")])
 
   dynamic "set" {
-    for_each = var.image_root != "" && var.image_root != null ? [1] : []
+    for_each = can(var.hpcc.image_root) ? [1] : []
     content {
       name  = "global.image.root"
-      value = var.image_root
+      value = var.hpcc.image_root
     }
   }
 
   dynamic "set" {
-    for_each = var.image_name != "" && var.image_name != null ? [1] : []
+    for_each = can(var.hpcc.image_name) ? [1] : []
     content {
       name  = "global.image.name"
-      value = var.image_name
+      value = var.hpcc.image_name
     }
   }
 
   dynamic "set" {
-    for_each = var.image_version != "" && var.image_version != null ? [1] : []
+    for_each = can(var.hpcc.image_version) ? [1] : []
     content {
       name  = "global.image.version"
-      value = var.image_version
+      value = var.hpcc.image_version
     }
-
   }
 
-  depends_on = [helm_release.storage, module.kubernetes]
+  dynamic "set" {
+    for_each = can(var.hpcc.image_root) ? [1] : []
+    content {
+      name  = "global.image.imagePullSecrets"
+      value = kubernetes_secret.private_docker_registry[0].metadata[0].name
+    }
+  }
+
+  depends_on = [helm_release.elastic4hpcclogs, helm_release.storage, module.kubernetes]
 }
 
-resource "helm_release" "elk" {
-  count = var.disable_helm || !var.elk.enable ? 0 : 1
+resource "helm_release" "elastic4hpcclogs" {
+  count = var.disable_helm || !var.elastic4hpcclogs.enable ? 0 : 1
 
-  name                       = local.elk_name
+  name                       = local.elastic4hpcclogs_name
   namespace                  = try(var.hpcc.namespace, terraform.workspace)
-  chart                      = local.elk_chart
-  values                     = concat(try([for v in var.elk.values : file(v)], []), var.expose_services ? [file("${path.root}/values/elk.yaml")] : [])
+  chart                      = local.elastic4hpcclogs_chart
+  values                     = concat(try([for v in var.elastic4hpcclogs.values : file(v)], []), var.expose_services ? [file("${path.root}/values/elastic4hpcclogs.yaml")] : [])
   create_namespace           = true
-  atomic                     = try(var.elk.atomic, null)
-  recreate_pods              = try(var.elk.recreate_pods, null)
-  cleanup_on_fail            = try(var.elk.cleanup_on_fail, null)
-  disable_openapi_validation = try(var.elk.disable_openapi_validation, null)
-  wait                       = try(var.elk.wait, null)
-  dependency_update          = try(var.elk.dependency_update, null)
-  timeout                    = try(var.elk.timeout, 600)
-  wait_for_jobs              = try(var.elk.wait_for_jobs, null)
-  lint                       = try(var.elk.lint, null)
+  atomic                     = try(var.elastic4hpcclogs.atomic, false)
+  force_update               = try(var.elastic4hpcclogs.force_update, false)
+  recreate_pods              = try(var.elastic4hpcclogs.recreate_pods, false)
+  reuse_values               = try(var.elastic4hpcclogs.reuse_values, false)
+  reset_values               = try(var.elastic4hpcclogs.reset_values, false)
+  cleanup_on_fail            = try(var.elastic4hpcclogs.cleanup_on_fail, false)
+  disable_openapi_validation = try(var.elastic4hpcclogs.disable_openapi_validation, false)
+  wait                       = try(var.elastic4hpcclogs.wait, true)
+  max_history                = try(var.storage.max_history, 0)
+  dependency_update          = try(var.elastic4hpcclogs.dependency_update, false)
+  timeout                    = try(var.elastic4hpcclogs.timeout, 900)
+  wait_for_jobs              = try(var.elastic4hpcclogs.wait_for_jobs, false)
+  lint                       = try(var.elastic4hpcclogs.lint, false)
+
+  depends_on = [helm_release.storage]
 }
 
 resource "helm_release" "storage" {
@@ -172,19 +209,21 @@ resource "helm_release" "storage" {
   values                     = concat(can(var.storage.storage_account.name) ? [file("${path.root}/values/hpcc-azurefile.yaml")] : [], try([for v in var.storage.values : file(v)], []))
   create_namespace           = true
   namespace                  = try(var.hpcc.namespace, terraform.workspace)
-  atomic                     = try(var.storage.atomic, null)
-  recreate_pods              = try(var.storage.recreate_pods, null)
+  atomic                     = try(var.storage.atomic, false)
+  force_update               = try(var.storage.force_update, false)
+  recreate_pods              = try(var.storage.recreate_pods, false)
+  reuse_values               = try(var.storage.reuse_values, false)
+  reset_values               = try(var.storage.reset_values, false)
   cleanup_on_fail            = try(var.storage.cleanup_on_fail, null)
-  disable_openapi_validation = try(var.storage.disable_openapi_validation, null)
-  wait                       = try(var.storage.wait, null)
-  dependency_update          = try(var.storage.dependency_update, null)
+  disable_openapi_validation = try(var.storage.disable_openapi_validation, false)
+  wait                       = try(var.storage.wait, true)
+  max_history                = try(var.storage.max_history, 0)
+  dependency_update          = try(var.storage.dependency_update, false)
   timeout                    = try(var.storage.timeout, 600)
-  wait_for_jobs              = try(var.storage.wait_for_jobs, null)
-  lint                       = try(var.storage.lint, null)
+  wait_for_jobs              = try(var.storage.wait_for_jobs, false)
+  lint                       = try(var.storage.lint, false)
 
-  depends_on = [
-    module.kubernetes
-  ]
+  depends_on = [module.kubernetes]
 }
 
 resource "null_resource" "az" {

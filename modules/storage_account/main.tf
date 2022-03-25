@@ -21,7 +21,7 @@ module "metadata" {
   naming_rules = module.naming.yaml
 
   market              = var.metadata.market
-  location            = local.virtual_network.location
+  location            = data.external.vnet[0].result.location
   sre_team            = var.metadata.sre_team
   environment         = var.metadata.environment
   product_name        = var.metadata.product_name
@@ -37,7 +37,7 @@ module "resource_group" {
   source = "github.com/Azure-Terraform/terraform-azurerm-resource-group.git?ref=v2.0.0"
 
   unique_name = var.resource_group.unique_name
-  location    = local.virtual_network.location
+  location    = data.external.vnet[0].result.location
   names       = local.names
   tags        = local.tags
 }
@@ -55,10 +55,11 @@ module "storage_account" {
   account_tier              = var.storage.account_tier
   access_tier               = var.storage.access_tier
   enable_large_file_share   = var.storage.enable_large_file_share
+  traffic_bypass            = var.storage.traffic_bypass
   shared_access_key_enabled = true
-  access_list = {
+  access_list = can(var.storage.allow_host_ip) ? {
     "my_ip" = data.http.host_ip.body
-  }
+  } : {}
 
   service_endpoints = local.virtual_network
 }
