@@ -6,7 +6,7 @@ data "azurerm_subscription" "current" {
 }
 
 data "external" "vnet" {
-  count   = can(var.virtual_network.private_subnet_id) ? 0 : 1
+  count   = can(var.virtual_network.private_subnet_id) && can(var.virtual_network.public_subnet_id) ? 0 : 1
   program = ["python", "../virtual_network/bin/run.py"]
 
   query = {

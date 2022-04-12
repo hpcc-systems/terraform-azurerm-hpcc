@@ -119,9 +119,9 @@ auto_launch_eclwatch = true
 /*
   # Provide an existing virtual network deployed outside of this project
   virtual_network = {
-    private_subnet_id = ""
-    public_subnet_id  = ""
-    route_table_id    = ""
-    location          = ""
+    private_subnet_id = "value"
+    public_subnet_id  = "value"
+    route_table_id    = "value"
+    location          = "value"
   }
 */

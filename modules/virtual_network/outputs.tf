@@ -15,7 +15,7 @@ output "route_table_id" {
 }
 
 resource "local_file" "output" {
-  content  = "{ \"location\":\"${module.resource_group.location}\", \"private_subnet_id\" : \"${local.private_subnet_id}\", \"public_subnet_id\" : \"${local.public_subnet_id}\", \"route_table_id\" : \"${local.route_table_id}\" }"
+  content  = local.vnet
   filename = "${path.module}/bin/outputs.json"
 }
 

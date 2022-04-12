@@ -30,7 +30,7 @@ variable "resource_group" {
 variable "storage" {
   description = "HPCC Helm chart variables."
   type        = any
-  default     = { default = {} }
+  default     = {}
 }
 
 variable "tags" {
@@ -41,5 +41,5 @@ variable "tags" {
 variable "virtual_network" {
   description = "Subnet IDs"
   type        = any
-  default     = { default = {} }
+  default     = {}
 }
