@@ -42,10 +42,10 @@ storage = {
 
 # Provide an existing virtual network deployed outside of this project
 /*
-  virtual_network = {
-    private_subnet_id = ""
-    public_subnet_id  = ""
-    route_table_id    = ""
-    location          = ""
-  }
+virtual_network = {
+  location       = "value"
+  route_table_id = "value"
+  private_subnet_id = "value"
+  public_subnet_id  = "value"
+}
 */

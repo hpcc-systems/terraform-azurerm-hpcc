@@ -18,4 +18,11 @@ locals {
   private_subnet_id = module.virtual_network.aks.hpcc.subnets["private"].id
   public_subnet_id  = module.virtual_network.aks.hpcc.subnets["public"].id
   route_table_id    = module.virtual_network.aks.hpcc.route_table_id
+
+  vnet = jsonencode({
+    "private_subnet_id" : "${local.private_subnet_id}",
+    "public_subnet_id" : "${local.public_subnet_id}",
+    "location" : "${module.resource_group.location}",
+    "route_table_id" : "${local.route_table_id}"
+  })
 }
