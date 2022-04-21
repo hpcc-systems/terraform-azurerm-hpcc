@@ -243,22 +243,6 @@ Usage Example:
     }
 <br>
 
-### The `image_root` argument:
-This block contains information about the HPCC image to use. This block is optional.
-
- | Name       | Description        | Type   | Default     | Required |
- | ---------- | ------------------ | ------ | ----------- | :------: |
- | image_root | Image root to use. | string | hpccsystems |    no    |
-<br>
-
-### The `image_name` argument:
-This block contains information about the HPCC image to use. This block is optional.
-
- | Name       | Description        | Type   | Default       | Required |
- | ---------- | ------------------ | ------ | ------------- | :------: |
- | image_name | Image name to use. | string | platform-core |    mo    |
-<br>
-
 ### The `disable_helm` argument:
 This block disable helm deployments by Terraform. This block is optional and will stop HPCC from being installed.
 
@@ -270,13 +254,16 @@ This block disable helm deployments by Terraform. This block is optional and wil
 ### The `hpcc` block:
 This block deploys the HPCC helm chart. This block is optional.
 
- | Name      | Description                                                             | Type         | Default                          | Required |
- | --------- | ----------------------------------------------------------------------- | ------------ | -------------------------------- | :------: |
- | chart     | Path to local chart directory name. Examples: ~/HPCC-Platform/helm/hpcc | string       | null                             |    no    |
- | namespace | Namespace to use.                                                       | string       | default                          |    no    |
- | name      | Release name of the chart.                                              | string       | `myhpcck8s`                      |    no    |
- | values    | List of desired state files to use similar to -f in CLI.                | list(string) | `values-retained-azurefile.yaml` |    no    |
- | version   | Version of the HPCC chart.                                              | string       | latest                           |   yes    |
+ | Name          | Description                                                             | Type         | Default                          | Required |
+ | ------------- | ----------------------------------------------------------------------- | ------------ | -------------------------------- | :------: |
+ | chart         | Path to local chart directory name. Examples: ~/HPCC-Platform/helm/hpcc | string       | null                             |    no    |
+ | namespace     | Namespace to use.                                                       | string       | default                          |    no    |
+ | name          | Release name of the chart.                                              | string       | `myhpcck8s`                      |    no    |
+ | values        | List of desired state files to use similar to -f in CLI.                | list(string) | `values-retained-azurefile.yaml` |    no    |
+ | chart_version | Version of the HPCC chart.                                              | string       | latest                           |   yes    |
+ | image_root    | HPCC image root to use.                                                 | string       | hpccsystems                      |    no    |
+ | image_name    | HPCC image name to use.                                                 | string       | platform-core                    |    no    |
+ | image_version | HPCC image version to use.                                              | string       | 8.6.20-rc1                       |    no    |
 <br>
 
  Usage Example:
@@ -371,6 +358,25 @@ The `hpcc`, `storage` and `elk` blocks also support the following arguments:
 | lint                       | Optional           | Run the helm chart linter during the plan. Defaults to false.                                                                                                      |
 <br>
 
+### The `registry` block:
+This block authenticates a private Docker repository. This block is optional.
+
+ | Name     | Description                                                                | Type   | Default | Required |
+ | -------- | -------------------------------------------------------------------------- | ------ | ------- | :------: |
+ | server   | The server address of the private Docker repository.                       | string | -       |   yes    |
+ | username | The username for the private Docker repository account.                    | string | -       |   yes    |
+ | password | The password, token, or API key for the private Docker repository account. | string | -       |   yes    |
+<br>
+
+Usage Example:
+<br>
+
+    registry = {
+        password = ""
+        server   = ""
+        username = ""
+    }
+<br>
 
 ### The `auto_connect` argument:
 This block automatically connect your cluster to your local machine similarly to `az aks get-credentials`.
@@ -378,14 +384,6 @@ This block automatically connect your cluster to your local machine similarly to
  | Name         | Description                                                                                               | Type | Default | Required |
  | ------------ | --------------------------------------------------------------------------------------------------------- | ---- | ------- | :------: |
  | auto_connect | Automatically connect to the Kubernetes cluster from the host machine by overwriting the current context. | bool | `false` |    no    |
-<br>
-
-### The `auto_connect` argument:
-This block automatically launch the ECLWatch interface.
-
- | Name                 | Description                                  | Type | Default | Required |
- | -------------------- | -------------------------------------------- | ---- | ------- | :------: |
- | auto_launch_eclwatch | Automatically launch the ECLWatch interface. | bool | `false` |    no    |
 <br>
 
 ### The `expose_services` argument:

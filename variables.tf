@@ -134,3 +134,9 @@ variable "elk" {
   type        = any
   default     = { default = { name = "myhpccelk", enable = true } }
 }
+
+variable "registry" {
+  description = "Use if image is hosted on a private docker repository."
+  type        = any
+  default     = {}
+}

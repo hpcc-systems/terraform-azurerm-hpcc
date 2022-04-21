@@ -97,6 +97,26 @@ resource "kubernetes_secret" "sa_secret" {
   type = "Opaque"
 }
 
+resource "kubernetes_secret" "private_docker_registry" {
+  count = can(var.registry.server) && can(var.registry.username) && can(var.registry.password) ? 1 : 0
+  metadata {
+    name = "docker-cfg"
+  }
+  type = "kubernetes.io/dockerconfigjson"
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        "${var.registry.server}" = {
+          "username" = var.registry.username
+          "password" = var.registry.password
+          "email"    = var.admin.email
+          "auth"     = base64encode("${var.registry.username}:${var.registry.password}")
+        }
+      }
+    })
+  }
+}
+
 resource "helm_release" "hpcc" {
   count = var.disable_helm ? 0 : 1
 
@@ -118,28 +138,35 @@ resource "helm_release" "hpcc" {
   try([for v in var.hpcc.values : file(v)], []), [file("${path.root}/values/values-retained-azurefile.yaml")])
 
   dynamic "set" {
-    for_each = var.image_root != "" && var.image_root != null ? [1] : []
+    for_each = can(var.hpcc.image_root) ? [1] : []
     content {
       name  = "global.image.root"
-      value = var.image_root
+      value = var.hpcc.image_root
     }
   }
 
   dynamic "set" {
-    for_each = var.image_name != "" && var.image_name != null ? [1] : []
+    for_each = can(var.hpcc.image_name) ? [1] : []
     content {
       name  = "global.image.name"
-      value = var.image_name
+      value = var.hpcc.image_name
     }
   }
 
   dynamic "set" {
-    for_each = var.image_version != "" && var.image_version != null ? [1] : []
+    for_each = can(var.hpcc.image_version) ? [1] : []
     content {
       name  = "global.image.version"
-      value = var.image_version
+      value = var.hpcc.image_version
     }
+  }
 
+  dynamic "set" {
+    for_each = can(var.hpcc.image_root) ? [1] : []
+    content {
+      name  = "global.image.imagePullSecrets"
+      value = kubernetes_secret.private_docker_registry[0].metadata[0].name
+    }
   }
 
   depends_on = [helm_release.storage, module.kubernetes]
