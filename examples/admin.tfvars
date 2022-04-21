@@ -62,16 +62,19 @@ node_pools = {
 # .......................
 
 hpcc = {
-  version = "8.4.14-rc1"
+  version = "8.6.20-rc1"
   name    = "myhpcck8s"
   atomic  = true
+  # image_root    = "<server-address>/<repository name>"
+  # image_name    = "platform-core-ln"
+  # image_version = "8.6.18-rc1"
 }
 
 elk = {
   enable = false
   name   = "myhpccelk"
   # chart  = ""
-  # values = ""
+  # values = []
 }
 
 storage = {
@@ -95,15 +98,6 @@ storage = {
 # Setting this to true can cause eclwatch service to stick in a pending state. Only use this if you know what you are doing.
 expose_services = true
 
-# image_root - Root of the image other than hpccsystems
-#  image_root = "foo"
-
-# image_name - Name of the image other than platform-core
-# image_name = "bar"
-
-# image_version - Version of the image
-# image_version = "bar"
-
 # auto_connect - Automatically connect to the kubernetes cluster from the host machine.
 auto_connect = true
 
@@ -124,4 +118,13 @@ auto_launch_eclwatch = true
     route_table_id    = "value"
     location          = "value"
   }
+*/
+
+/*
+# Private Docker repository authentification
+registry = {
+  password = "my_api_key"
+  server   = "westus.lexisnexisrisk.com"
+  username = "foo@lexisnexisrisk.com"
+}
 */
