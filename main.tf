@@ -178,7 +178,7 @@ resource "helm_release" "elk" {
   name                       = local.elk_name
   namespace                  = try(var.hpcc.namespace, terraform.workspace)
   chart                      = local.elk_chart
-  values                     = concat(try([for v in var.elk.values : file(v)], []), var.expose_services ? [file("${path.root}/values/elk.yaml")] : [])
+  values                     = try([for v in var.elk.values : file(v)], [])
   create_namespace           = true
   atomic                     = try(var.elk.atomic, null)
   recreate_pods              = try(var.elk.recreate_pods, null)

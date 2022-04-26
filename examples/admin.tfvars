@@ -71,7 +71,7 @@ hpcc = {
 }
 
 elk = {
-  enable = false
+  enable = true
   name   = "myhpccelk"
   # chart  = ""
   # values = []
