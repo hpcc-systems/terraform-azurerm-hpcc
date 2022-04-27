@@ -169,7 +169,11 @@ resource "helm_release" "hpcc" {
     }
   }
 
-  depends_on = [helm_release.storage, module.kubernetes]
+  depends_on = [
+    helm_release.elk,
+    helm_release.storage,
+    module.kubernetes
+  ]
 }
 
 resource "helm_release" "elk" {
@@ -189,6 +193,10 @@ resource "helm_release" "elk" {
   timeout                    = try(var.elk.timeout, 600)
   wait_for_jobs              = try(var.elk.wait_for_jobs, null)
   lint                       = try(var.elk.lint, null)
+
+  depends_on = [
+    helm_release.storage
+  ]
 }
 
 resource "helm_release" "storage" {
