@@ -13,22 +13,8 @@ locals {
   ) : module.metadata.names
   tags            = var.disable_naming_conventions ? merge(var.tags, { "admin" = var.admin.name, "email" = var.admin.email }) : merge(module.metadata.tags, { "admin" = var.admin.name, "email" = var.admin.email }, try(var.tags))
   virtual_network = can(var.virtual_network.private_subnet_id) && can(var.virtual_network.public_subnet_id) && can(var.virtual_network.route_table_id) ? var.virtual_network : data.external.vnet[0].result
-  cluster_name    = "${local.names.resource_group_type}-${local.names.product_name}-terraform-${local.names.location}-${var.admin.name}-${terraform.workspace}"
-
-  hpcc_repository = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-${var.hpcc.chart_version}.tgz"
-  hpcc_chart      = can(var.hpcc.chart) ? var.hpcc.chart : local.hpcc_repository
-  hpcc_name       = can(var.hpcc.name) ? var.hpcc.name : "myhpcck8s"
-
-
-  storage_version    = can(var.storage.chart_version) ? var.storage.chart_version : "0.1.0"
-  storage_repository = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-azurefile-${local.storage_version}.tgz"
-  storage_chart      = can(var.storage.chart) ? var.storage.chart : local.storage_repository
-  storage_account    = can(var.storage.storage_account.resource_group_name) && can(var.storage.storage_account.name) && can(var.storage.storage_account.location) ? var.storage.storage_account : data.external.sa[0].result
-
-  elk_version    = can(var.elk.chart_version) ? var.elk.chart_version : "1.2.1"
-  elk_repository = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/elastic4hpcclogs-${local.elk_version}.tgz"
-  elk_chart      = can(var.elk.chart) ? var.elk.chart : local.elk_repository
-  elk_name       = can(var.elk.name) ? var.elk.name : "myhpccelk"
+  cluster_name    = "${local.names.resource_group_type}-${local.names.product_name}-terraform-${local.names.location}-${var.admin.name}${random_integer.int.result}-${terraform.workspace}"
+  storage_account = can(var.storage.storage_account.resource_group_name) && can(var.storage.storage_account.name) && can(var.storage.storage_account.location) ? var.storage.storage_account : data.external.sa[0].result
 
   az_command    = try("az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name} --overwrite", "")
   web_urls      = { auto_launch_eclwatch = "http://$(kubectl get svc --field-selector metadata.name=eclwatch | awk 'NR==2 {print $4}'):8010" }

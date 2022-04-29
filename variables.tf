@@ -7,7 +7,7 @@ variable "admin" {
 }
 
 variable "expose_services" {
-  description = "Expose ECLWatch and ELK to the Internet. This is not secure. Please consider before using it."
+  description = "Expose ECLWatch and elastic4hpcclogs to the Internet. This is not secure. Please consider before using it."
   type        = bool
   default     = false
 }
@@ -93,46 +93,22 @@ variable "node_pools" {
   default     = { default = {} }
 }
 
-variable "image_root" {
-  description = "Root of the image other than hpccsystems."
-  type        = string
-  default     = null
-}
-
-variable "image_name" {
-  description = "Root of the image other than hpccsystems."
-  type        = string
-  default     = null
-}
-
-variable "image_version" {
-  description = "Root of the image other than hpccsystems."
-  type        = string
-  default     = null
-}
-
 variable "hpcc" {
   description = "HPCC Helm chart variables."
   type        = any
-  default     = { default = { name = "myhpcck8s" } }
+  default     = { name = "myhpcck8s" }
 }
 
 variable "storage" {
   description = "Storage account arguments."
   type        = any
-  default     = { default = {} }
+  default     = { default = false }
 }
 
-variable "existing_storage" {
-  description = "Existing storage account metadata."
-  type        = any
-  default     = { default = {} }
-}
-
-variable "elk" {
+variable "elastic4hpcclogs" {
   description = "HPCC Helm chart variables."
   type        = any
-  default     = { default = { name = "myhpccelk", enable = true } }
+  default     = { name = "myelastic4hpcclogs", enable = true }
 }
 
 variable "registry" {

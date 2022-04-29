@@ -4,6 +4,11 @@ esp:
   application: eclwatch
   auth: none
   replicas: 1
+# Add remote clients to generated client certificates and make the ESP require that one of the generated certificates is provided by a client in order to connect
+#   When setting up remote clients make sure that certificates.issuers.remote.enabled is set to true.
+# remoteClients:
+# - name: myclient
+#   organization: mycompany
   service:
     ## port can be used to change the local port used by the pod. If omitted, the default port (8880) is used
     port: 8888
@@ -14,9 +19,25 @@ esp:
     ## Annotations can be specified on a service - for example to specify provider-specific information such as service.beta.kubernetes.io/azure-load-balancer-internal-subnet
     #annotations:
     #  service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "mysubnet"
+    #  The service.annotations prefixed with hpcc.eclwatch.io should not be declared here. They can be declared
+    #  in other services in order to be exposed in the ECLWatch interface. Similar function can be used by other 
+    #  applications. For other applications, the "eclwatch" inside the service.annotations should be replaced by
+    #  their application names. 
+    #  hpcc.eclwatch.io/enabled: "true"
+    #  hpcc.eclwatch.io/description: "some description"
     ## You can also specify labels on a service
     #labels:
     #  mylabel: "3"
+    ## Links specify the web links for a service. The web links may be shown on ECLWatch.
+    #links:
+    #- name: linkname
+    #  description: "some description"
+    #  url: "http://abc.com/def?g=1"
+    ## CIDRS allowed to access this service.
+    #loadBalancerSourceRanges: [1.2.3.4/32, 5.6.7.8/32]
+  # Increase maxRequestEntityLength when query deployments (or similar actions) start to fail because they surpass the maximum size
+  #  default for EclWatch is 60M, default for other services is 8M
+  #maxRequestEntityLength: 70M
   #resources:
   #  cpu: "1"
   #  memory: "2G"
@@ -27,6 +48,9 @@ esp:
   service:
     servicePort: 8010
     visibility: cluster
+  # Increase maxRequestEntityLength when query deployments (or similar actions) start to fail because they surpass the maximum size
+  #  default for EclWatch is 60M, default for other services is 8M
+  #maxRequestEntityLength: 9M
   #resources:
   #  cpu: "250m"
   #  memory: "1G"
@@ -37,6 +61,13 @@ esp:
   service:
     visibility: global
     servicePort: 8002
+    #annotations:
+    #  hpcc.eclwatch.io/enabled: "true"
+    #  hpcc.eclwatch.io/description: "Roxie Test page"
+    #  hpcc.eclwatch.io/port: "8002"
+  # Increase maxRequestEntityLength when query deployments (or similar actions) start to fail because they surpass the maximum size
+  #  default for EclWatch is 60M, default for other services is 8M
+  #maxRequestEntityLength: 9M
   #resources:
   #  cpu: "250m"
   #  memory: "1G"
@@ -47,6 +78,9 @@ esp:
   service:
     visibility: local
     servicePort: 8899
+  # Increase maxRequestEntityLength when query deployments (or similar actions) start to fail because they surpass the maximum size
+  #  default for EclWatch is 60M, default for other services is 8M
+  #maxRequestEntityLength: 9M
   #resources:
   #  cpu: "250m"
   #  memory: "1G"
@@ -54,10 +88,47 @@ esp:
   application: sql2ecl
   auth: none
   replicas: 1
+# remoteClients:
+# - name: sqlclient111
   service:
     visibility: local
     servicePort: 8510
   #domain: hpccsql.com
+  # Increase maxRequestEntityLength when query deployments (or similar actions) start to fail because they surpass the maximum size
+  #  default for EclWatch is 60M, default for other services is 8M
+  #maxRequestEntityLength: 9M
   #resources:
   #  cpu: "250m"
   #  memory: "1G"
+- name: dfs
+  application: dfs
+  auth: none
+  replicas: 1
+  service:
+    visibility: local
+    servicePort: 8520
+  # Increase maxRequestEntityLength when query deployments (or similar actions) start to fail because they surpass the maximum size
+  #  default for EclWatch is 60M, default for other services is 8M
+  #maxRequestEntityLength: 9M
+  #resources:
+  #  cpu: "250m"
+  #  memory: "1G"
+
+
+#- name: ldapenvironment
+  #ldapenvironment is a stand alone ESP service used to help stand up new HPCC LDAP Environments
+#  application: ldapenvironment
+#  auth: ldap
+#  #specify the hpcc branch Root Name
+#  hpccRootName: ou=hpcc,dc=myldap,dc=com
+#  #specify all BaseDN with your LDAP Server's "dc=" settings
+#  sharedFilesBaseDN: ou=files,ou=hpcc,dc=myldap,dc=com
+#  sharedGroupsBaseDN: ou=groups,ou=hpcc,dc=myldap,dc=com
+#  sharedUsersBaseDN: ou=users,ou=hpcc,dc=myldap,dc=com
+#  sharedResourcesBaseDN: ou=smc,ou=espservices,ou=hpcc,dc=myldap,dc=com
+#  sharedWorkunitsBaseDN: ou=workunits,ou=hpcc,dc=myldap,dc=com
+#  adminGroupName: HPCCAdmins
+#  replicas: 1
+#  service:
+#    visibility: local
+#    servicePort: 8511
