@@ -183,7 +183,7 @@ resource "helm_release" "elastic4hpcclogs" {
   chart                      = can(var.elastic4hpcclogs.remote_chart) ? "elastic4hpcclogs" : var.elastic4hpcclogs.local_chart
   repository                 = can(var.elastic4hpcclogs.remote_chart) ? var.elastic4hpcclogs.remote_chart : null
   version                    = can(var.elastic4hpcclogs.version) ? var.elastic4hpcclogs.version : null
-  values                     = concat(try([for v in var.elastic4hpcclogs.values : file(v)], []), can(var.elastic4hpcclogs.expose) ? [file("${path.root}/values/elastic4hpcclogs.yaml")] : [])
+  values                     = concat([data.http.elastic4hpcclogs_hpcc_logaccess.body], try([for v in var.elastic4hpcclogs.values : file(v)], []))
   create_namespace           = true
   atomic                     = try(var.elastic4hpcclogs.atomic, false)
   force_update               = try(var.elastic4hpcclogs.force_update, false)
@@ -199,13 +199,14 @@ resource "helm_release" "elastic4hpcclogs" {
   wait_for_jobs              = try(var.elastic4hpcclogs.wait_for_jobs, false)
   lint                       = try(var.elastic4hpcclogs.lint, false)
 
-  # dynamic "set" {
-  #   for_each = can(var.elastic4hpcclogs.expose) ? [1] : []
-  #   content {
-  #     name  = "kibana.service.annotations.service\\.beta\\.kubernetes\\.io/azure-load-balancer-internal"
-  #     value = tostring(false)
-  #   }
-  # }
+  dynamic "set" {
+    for_each = can(var.elastic4hpcclogs.expose) ? [1] : []
+    content {
+      type  = "string"
+      name  = "kibana.service.annotations.service\\.beta\\.kubernetes\\.io/azure-load-balancer-internal"
+      value = tostring(false)
+    }
+  }
 
   depends_on = [
     helm_release.storage

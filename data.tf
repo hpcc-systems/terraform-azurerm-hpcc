@@ -35,3 +35,8 @@ data "external" "sa" {
     data_file = "modules/storage_account/bin/outputs.json"
   }
 }
+
+data "http" "elastic4hpcclogs_hpcc_logaccess" {
+  
+  url = local.elastic4hpcclogs_hpcc_logaccess
+}
