@@ -48,7 +48,6 @@ module "kubernetes" {
   tags                = local.tags
   resource_group_name = module.resource_group.name
   identity_type       = "UserAssigned" # Allowed values: UserAssigned or SystemAssigned
-
   rbac = {
     enabled        = false
     ad_integration = false
@@ -134,7 +133,7 @@ resource "helm_release" "hpcc" {
   lint                       = try(var.hpcc.lint, false)
 
   values = concat(var.hpcc.expose_eclwatch ? [file("${path.root}/values/esp.yaml")] : [],
-  try([for v in var.hpcc.values : file(v)], []), [file("${path.root}/values/values-retained-azurefile.yaml")])
+  [file("${path.root}/values/values-retained-azurefile.yaml")], try([for v in var.hpcc.values : file(v)], []))
 
   dynamic "set" {
     for_each = can(var.hpcc.image_root) ? [1] : []
@@ -219,7 +218,7 @@ resource "helm_release" "storage" {
   chart                      = can(var.storage.remote_chart) ? "hpcc-azurefile" : var.storage.local_chart
   repository                 = can(var.storage.remote_chart) ? var.storage.remote_chart : null
   version                    = can(var.storage.version) ? var.storage.version : null
-  values                     = concat(can(var.storage.storage_account.name) ? [file("${path.root}/values/hpcc-azurefile.yaml")] : [], try([for v in var.storage.values : file(v)], []))
+  values                     = concat(var.storage.default == true ? [] : [file("${path.root}/values/hpcc-azurefile.yaml")], try([for v in var.storage.values : file(v)], []))
   create_namespace           = true
   namespace                  = try(var.hpcc.namespace, terraform.workspace)
   atomic                     = try(var.storage.atomic, false)
