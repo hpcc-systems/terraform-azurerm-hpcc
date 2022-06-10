@@ -132,8 +132,8 @@ resource "helm_release" "hpcc" {
   wait_for_jobs              = try(var.hpcc.wait_for_jobs, false)
   lint                       = try(var.hpcc.lint, false)
 
-  values = concat(var.hpcc.expose_eclwatch ? [file("${path.root}/values/esp.yaml")] : [],
-  [file("${path.root}/values/values-retained-azurefile.yaml")], try([for v in var.hpcc.values : file(v)], []))
+  values = concat(var.elastic4hpcclogs.enable == true ? [data.http.elastic4hpcclogs_hpcc_logaccess.body] : [], var.hpcc.expose_eclwatch ? [file("${path.root}/values/esp.yaml")] : [],
+  [file("${path.root}/values/values-retained-azurefile.yaml")], try([for v in var.hpcc.values : file(v)], []) )
 
   dynamic "set" {
     for_each = can(var.hpcc.image_root) ? [1] : []
@@ -182,7 +182,7 @@ resource "helm_release" "elastic4hpcclogs" {
   chart                      = can(var.elastic4hpcclogs.remote_chart) ? "elastic4hpcclogs" : var.elastic4hpcclogs.local_chart
   repository                 = can(var.elastic4hpcclogs.remote_chart) ? var.elastic4hpcclogs.remote_chart : null
   version                    = can(var.elastic4hpcclogs.version) ? var.elastic4hpcclogs.version : null
-  values                     = concat([data.http.elastic4hpcclogs_hpcc_logaccess.body], try([for v in var.elastic4hpcclogs.values : file(v)], []))
+  values                     = try([for v in var.elastic4hpcclogs.values : file(v)], [])
   create_namespace           = true
   atomic                     = try(var.elastic4hpcclogs.atomic, false)
   force_update               = try(var.elastic4hpcclogs.force_update, false)
