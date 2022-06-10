@@ -132,8 +132,8 @@ resource "helm_release" "hpcc" {
   wait_for_jobs              = try(var.hpcc.wait_for_jobs, false)
   lint                       = try(var.hpcc.lint, false)
 
-  values = concat(var.elastic4hpcclogs.enable == true ? [data.http.elastic4hpcclogs_hpcc_logaccess.body] : [], var.hpcc.expose_eclwatch ? [file("${path.root}/values/esp.yaml")] : [],
-  [file("${path.root}/values/values-retained-azurefile.yaml")], try([for v in var.hpcc.values : file(v)], []) )
+  values = concat(var.elastic4hpcclogs.enable ? [data.http.elastic4hpcclogs_hpcc_logaccess.body] : [], var.hpcc.expose_eclwatch ? [file("${path.root}/values/esp.yaml")] : [],
+  [file("${path.root}/values/values-retained-azurefile.yaml")], try([for v in var.hpcc.values : file(v)], []))
 
   dynamic "set" {
     for_each = can(var.hpcc.image_root) ? [1] : []
@@ -219,7 +219,7 @@ resource "helm_release" "storage" {
   chart                      = can(var.storage.remote_chart) ? "hpcc-azurefile" : var.storage.local_chart
   repository                 = can(var.storage.remote_chart) ? var.storage.remote_chart : null
   version                    = can(var.storage.version) ? var.storage.version : null
-  values                     = concat(var.storage.default == true ? [] : [file("${path.root}/values/hpcc-azurefile.yaml")], try([for v in var.storage.values : file(v)], []))
+  values                     = concat(var.storage.default ? [] : [file("${path.root}/values/hpcc-azurefile.yaml")], try([for v in var.storage.values : file(v)], []))
   create_namespace           = true
   namespace                  = try(var.hpcc.namespace, terraform.workspace)
   atomic                     = try(var.storage.atomic, false)
