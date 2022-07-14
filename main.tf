@@ -160,7 +160,7 @@ resource "helm_release" "hpcc" {
   }
 
   dynamic "set" {
-    for_each = can(var.hpcc.image_root) ? [1] : []
+    for_each = can(kubernetes_secret.private_docker_registry[0].metadata[0].name) ? [1] : []
     content {
       name  = "global.image.imagePullSecrets"
       value = kubernetes_secret.private_docker_registry[0].metadata[0].name
