@@ -27,7 +27,7 @@ variable "resource_group" {
   }
 }
 
-variable "storage" {
+variable "storage_accounts" {
   description = "HPCC Helm chart variables."
   type        = any
   default     = {}

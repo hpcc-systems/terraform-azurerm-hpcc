@@ -1,9 +1,10 @@
-resource "random_integer" "random" {
-  min = 1
-  max = 3
+resource "random_string" "random" {
+  length  = 4
+  special = false
 }
 
 resource "random_uuid" "random" {
+
 }
 
 module "subscription" {
@@ -42,20 +43,21 @@ module "resource_group" {
   tags        = local.tags
 }
 
-module "storage_account" {
-  source = "github.com/Azure-Terraform/terraform-azurerm-storage-account.git?ref=v0.12.1"
+module "storage_accounts" {
+  source   = "github.com/Azure-Terraform/terraform-azurerm-storage-account.git?ref=v0.12.1"
+  for_each = var.storage_accounts
 
-  name                = lower(try("${var.admin.name}hpccsa${random_integer.random.result}", "hpccsa${random_integer.random.result}404"))
+  name                = substr(lower("${each.key}${random_string.random.result}"), 0, 24)
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
   tags                = local.tags
 
-  account_kind              = var.storage.account_kind
-  replication_type          = var.storage.replication_type
-  account_tier              = var.storage.account_tier
-  access_tier               = var.storage.access_tier
-  enable_large_file_share   = var.storage.enable_large_file_share
-  shared_access_key_enabled = true
+  account_kind              = each.value.account_kind
+  replication_type          = each.value.replication_type
+  account_tier              = each.value.account_tier
+  access_tier               = each.value.access_tier
+  enable_large_file_share   = each.value.enable_large_file_share
+  shared_access_key_enabled = each.value.shared_access_key_enabled
   access_list = {
     "my_ip" = data.http.host_ip.body
   }
@@ -64,16 +66,20 @@ module "storage_account" {
 }
 
 resource "azurerm_storage_share" "storage_shares" {
-  for_each = local.storage_shares
+  for_each = { for share in local.shares : "${share.name}" => share }
 
-  name                 = each.key
-  storage_account_name = module.storage_account.name
-  quota                = each.value
+  name                 = lower("${each.key}share")
+  storage_account_name = each.value.sa_name
+  quota                = each.value.quota
+  # access_tier          = each.value.access_tier
+  enabled_protocol = each.value.enabled_protocol
   acl {
     id = random_uuid.random.result
 
     access_policy {
-      permissions = "rwdl"
+      permissions = each.value.permissions
+      start       = can(each.value.start) ? each.value.start : null
+      expiry      = can(each.value.expiry) ? each.value.expiry : null
     }
   }
 }

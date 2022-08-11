@@ -128,8 +128,17 @@ Usage Example:
 
 <br>
 
-### The `storage` block:
-This block deploys the HPCC persistent volumes. This block is required.
+### The `storage_account` block:
+This block deploys the storage accounts for HPCC-Platform data planes. This block is required.
+
+ | Name   | Description                                                                           | Type | Default | Valid Options | Required |
+ | ------ | ------------------------------------------------------------------------------------- | ---- | ------- | ------------- | :------: |
+ | dali   | The storage account for Dali data planes                                              | no   | any     | -             |    -     |
+ | sasha  | The storage account for Sasha data planes                                             | no   | any     | -             |    -     |
+ | common | The storage account for all data planes not defined in their specific storage account | no   | any     | -             |    -     |
+ <br>
+
+#### Only the following attributes are acceptable within a storage account definition:
 
  | Name                    | Description                                                                                            | Type   | Default     | Valid Options                                                            | Required |
  | ----------------------- | ------------------------------------------------------------------------------------------------------ | ------ | ----------- | ------------------------------------------------------------------------ | :------: |
@@ -138,23 +147,117 @@ This block deploys the HPCC persistent volumes. This block is required.
  | account_tier            | Defines the Tier to use for this storage account. Changing this will destroy your data.                | string | `Premium`   | `Standard`, `Premium`                                                    |   yes    |
  | enable_large_file_share | Enable Large File Share.                                                                               | bool   | `false`     | `false`, `true`                                                          |   yes    |
  | replication_type        | Defines the type of replication to use for this storage account. Changing this will destroy your data. | string | `LRS`       | `LRS`, `GRS`, `RAGRS`, `ZRS`, `GZRS`, `RAGZRS`                           |   yes    |
+ | shares                  | Defines the file shares for the storage account                                                        | yes    | `map(any)`  | -                                                                        |    -     |
 <br>
 
+#### Only the following attributes are acceptable within a share definition:
+
+ | Name             | Description                                                              | Type   | Default | Valid Options                                           | Required |
+ | ---------------- | ------------------------------------------------------------------------ | ------ | ------- | ------------------------------------------------------- | :------: |
+ | quota            | The size of the share or HPCC data plane                                 | number | -       | -                                                       |   yes    |
+ | permissions      | The set of permissions for the share or data plane                       | string | `rwdl`  | one or a combination of `r`, `w`, `d`, `l` (ex. `rwdl`) |   yes    |
+ | access_tier      | As described above                                                       |
+ | enabled_protocol | The network file sharing protocol to use for the share                   | string | `SMB`   | `SMB`, `NFS`                                            |   yes    |
+ | sub_path         | The sub path for the HPCC data plane                                     | string | -       | -                                                       |   yes    |
+ | category         | The category for the HPCC data plane                                     | string | -       | -                                                       |   yes    |
+ | start            | The time at which the access policies should be valid from for the share | string | -       | `ISO8601` format only                                   |    no    |
+ | expiry           | The time at which the access policies should be expired for the share    | string | -       | `ISO8601` format only                                   |    no    |
+ <br>
+ 
 Usage Example:
 <br>
 
-    storage = {
-        access_tier              = "Hot"
-        account_kind             = "StorageV2"
-        account_tier             = "Standard"
-        account_replication_type = "LRS"
+    storage_accounts = {
+        # do not change the names of the keys
+        dali = {
+            access_tier               = "Hot"
+            account_kind              = "FileStorage"
+            account_tier              = "Premium"
+            replication_type          = "LRS"
+            enable_large_file_share   = true
+            shared_access_key_enabled = true
+            # auto_approval_subscription_ids = []
 
-        quotas = {
-            dali  = 3
-            data  = 2
-            dll   = 2
-            lz    = 2
-            sasha = 5
+            shares = {
+                dali = {
+                    quota            = 100
+                    permissions      = "rwdl"
+                    access_tier      = "Premium"     # Hot, Cool, TransactionOptimized, Premium
+                    enabled_protocol = "SMB"         # SMB, NFS
+                    sub_path         = "dalistorage" # do not change
+                    category         = "dali"        # do not change
+                    # start = "2022-06-13T22:31:31.612Z"
+                    # expiry = "2022-06-14T22:31:31.612Z"
+                }
+            }
+        }
+
+        sasha = {
+            access_tier               = "Hot"
+            account_kind              = "FileStorage"
+            account_tier              = "Premium"
+            replication_type          = "LRS"
+            enable_large_file_share   = true
+            shared_access_key_enabled = true
+            # auto_approval_subscription_ids = []
+
+            shares = {
+                sasha = {
+                    quota            = 100
+                    permissions      = "rwdl"
+                    access_tier      = "Premium" # Hot, Cool, TransactionOptimized, Premium
+                    enabled_protocol = "SMB"     # SMB, NFS
+                    sub_path         = "sasha"   # do not change
+                    category         = "sasha"   # do not change
+                    # start = "2022-06-13T22:31:31.612Z"
+                    # expiry = "2022-06-14T22:31:31.612Z"
+                }
+            }
+        }
+
+        common = {
+            access_tier               = "Hot"
+            account_kind              = "StorageV2"
+            account_tier              = "Standard"
+            replication_type          = "LRS"
+            shared_access_key_enabled = true
+            enable_large_file_share   = true
+            # auto_approval_subscription_ids = []
+
+            shares = {
+                data = {
+                    quota            = 100
+                    permissions      = "rwdl"
+                    access_tier      = "Premium"   # Hot, Cool, TransactionOptimized, Premium
+                    enabled_protocol = "SMB"       # SMB, NFS
+                    sub_path         = "hpcc-data" # do not change
+                    category         = "data"      # do not change
+                    # start = "2022-06-13T22:31:31.612Z"
+                    # expiry = "2022-06-14T22:31:31.612Z"
+                }
+
+                dll = {
+                    quota            = 100
+                    permissions      = "rwdl"
+                    access_tier      = "Premium" # Hot, Cool, TransactionOptimized, Premium
+                    enabled_protocol = "SMB"     # SMB, NFS
+                    sub_path         = "queries" # do not change
+                    category         = "dll"     # do not change
+                    # start = "2022-06-13T22:31:31.612Z"
+                    # expiry = "2022-06-14T22:31:31.612Z"
+                }
+
+                mydropzone = {
+                    quota            = 100
+                    permissions      = "rwdl"
+                    access_tier      = "Premium"  # Hot, Cool, TransactionOptimized, Premium
+                    enabled_protocol = "SMB"      # SMB, NFS
+                    sub_path         = "dropzone" # do not change
+                    category         = "lz"       # do not change
+                    # start = "2022-06-13T22:31:31.612Z"
+                    # expiry = "2022-06-14T22:31:31.612Z"
+                }
+            }
         }
     }
 

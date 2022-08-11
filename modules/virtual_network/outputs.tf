@@ -16,7 +16,7 @@ output "route_table_id" {
 
 resource "local_file" "output" {
   content  = local.vnet
-  filename = "${path.module}/bin/outputs.json"
+  filename = "${path.module}/bin/vnet.json"
 }
 
 

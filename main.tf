@@ -75,15 +75,15 @@ module "kubernetes" {
 }
 
 resource "kubernetes_secret" "sa_secret" {
-  count = var.storage.default ? 0 : 1
+  for_each = local.storage_accounts
 
   metadata {
-    name = "azure-secret"
+    name = "${each.key}-azure-secret"
   }
 
   data = {
-    "azurestorageaccountname" = local.storage_account.name
-    "azurestorageaccountkey"  = data.azurerm_storage_account.hpccsa[0].primary_access_key
+    "azurestorageaccountname" = "${each.key}"
+    "azurestorageaccountkey"  = "${data.azurerm_storage_account.hpccsa[each.key].primary_access_key}"
   }
 
   type = "Opaque"
@@ -128,7 +128,7 @@ resource "helm_release" "hpcc" {
   max_history                = try(var.hpcc.max_history, 0)
   wait                       = try(var.hpcc.wait, true)
   dependency_update          = try(var.hpcc.dependency_update, false)
-  timeout                    = try(var.hpcc.timeout, 900)
+  timeout                    = try(var.hpcc.timeout, 480)
   wait_for_jobs              = try(var.hpcc.wait_for_jobs, false)
   lint                       = try(var.hpcc.lint, false)
 
@@ -219,7 +219,7 @@ resource "helm_release" "storage" {
   chart                      = can(var.storage.remote_chart) ? "hpcc-azurefile" : var.storage.local_chart
   repository                 = can(var.storage.remote_chart) ? var.storage.remote_chart : null
   version                    = can(var.storage.version) ? var.storage.version : null
-  values                     = concat(var.storage.default ? [] : [file("${path.root}/values/hpcc-azurefile.yaml")], try([for v in var.storage.values : file(v)], []))
+  values                     = concat(var.storage.default ? [] : [local.hpcc_azurefile], try([for v in var.storage.values : file(v)], []))
   create_namespace           = true
   namespace                  = try(var.hpcc.namespace, terraform.workspace)
   atomic                     = try(var.storage.atomic, false)

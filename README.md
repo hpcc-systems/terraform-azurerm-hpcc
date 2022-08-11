@@ -374,17 +374,29 @@ This block deploys the HPCC persistent volumes. This block is required.
  | lint                       | Run the helm chart linter during the plan.                                                                                                                                                                                     | bool         | false                                                  | no               |
 <br>
 
-### The `storage_account` block:
+#### The `storage_accounts` block:
 This block deploys the HPCC persistent volumes. This block is required.
 
- | Name                | Description                                                          | Type   | Default                     | Valid Options | Required |
- | ------------------- | -------------------------------------------------------------------- | ------ | --------------------------- | ------------- | :------: |
- | location            | Storage account location                                             | string | -                           | -             |    no    |
- | name                | Release name of the chart.                                           | string | `myhpcck8s`                 | yes           |
- | resource_group_name | The name of the resource group in which the storage account belongs. | string | -                           | -             |   yes    |
- | subscription_id     | The ID of the subscription in which the storage account belongs.     | string | Admin's active subscription | -             |    no    |
+ | Name                | Description                                                          | Type         | Default                     | Valid Options | Required |
+ | ------------------- | -------------------------------------------------------------------- | ------------ | --------------------------- | ------------- | :------: |
+ | name                | Name of the storage account                                          | string       | -                           | -             |   yes    |
+ | resource_group_name | The name of the resource group in which the storage account belongs. | string       | -                           | -             |   yes    |
+ | subscription_id     | The ID of the subscription in which the storage account belongs.     | string       | Admin's active subscription | -             |    no    |
+ | shares              | The list of shares in the storage account                            | list(object) | -                           | -             |   yes    |
+ |                     |
 <br>
 
+#### The `shares` block:
+This block defines the list of shares in the storage account. This block is required.
+
+ | Name     | Description                           | Type   | Default | Valid Options | Required |
+ | -------- | ------------------------------------- | ------ | ------- | ------------- | :------: |
+ | name     | The name of the share.                | string | -       | -             |   yes    |
+ | sub_path | The sub path for the HPCC data plane. | string | -       | -             |   yes    |
+ | category | The category for the HPCC data plane  | string | -       | -             |   yes    |
+ | sku      | The sku for the HPCC data plane.      | string | -       | -             |   yes    |
+ | quota    | The size of the share in Gigabytes    | number | -       | -             |   yes    |
+ 
 Usage Example:
 <br>
 
@@ -408,12 +420,70 @@ Usage Example:
         # local_chart = "/Users/foo/work/demo/helm-chart/helm/examples/azure/hpcc-azurefile"
         # version                    = "0.1.0"
         # values = ["/Users/foo/mycustomvalues1.yaml", "/Users/foo/mycustomvalues2.yaml"]
+
         /*
-        storage_account = {
-            location            = "eastus"
-            name                = "foohpccsa3"
-            resource_group_name = "app-storageaccount-sandbox-eastus-48936"
-            # subscription_id   = "value"
+        storage_accounts = {
+            # do not change the key names 
+            dali = {
+                name = "dalikxgt"
+                resource_group_name = "app-storageaccount-sandbox-eastus-79735"
+
+                shares = {
+                    dali = {
+                        name = "dalishare"
+                        sub_path   = "dalistorage" //do not change this value
+                        category   = "dali" //do not change this value
+                        sku        = "Premium_LRS"
+                        quota      = 100
+                    }
+                }
+            }
+
+            sasha = {
+                name = "sashakxgt"
+                resource_group_name = "app-storageaccount-sandbox-eastus-79735"
+
+                shares = {
+                    sasha = {
+                        name = "sashashare"
+                        sub_path   = "sasha" //do not change this value
+                        category   = "sasha" //do not change this value
+                        sku        = "Standard_LRS"
+                        quota      = 100
+                    }
+                }
+            }
+
+            common = {
+                name = "commonkxgt"
+                resource_group_name = "app-storageaccount-sandbox-eastus-79735"
+
+                shares = {
+                    data = {
+                        name = "datashare"
+                        sub_path   = "hpcc-data" //do not change this value
+                        category   = "data" //do not change this value
+                        sku        = "Standard_LRS"
+                        quota      = 100
+                    }
+
+                    dll = {
+                        name = "dllshare"
+                        sub_path   = "queries" //do not change this value
+                        category   = "dll" //do not change this value
+                        sku        = "Standard_LRS"
+                        quota      = 100
+                    }
+
+                    mydropzone = {
+                        name = "mydropzoneshare"
+                        sub_path   = "dropzone" //do not change this value
+                        category   = "lz" //do not change this value
+                        sku        = "Standard_LRS"
+                        quota      = 100
+                    }
+                }
+            }
         }
         */
     }
