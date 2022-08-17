@@ -151,12 +151,70 @@ storage = {
   # local_chart = "/Users/foo/work/demo/helm-chart/helm/examples/azure/hpcc-azurefile"
   # version                    = "0.1.0"
   # values = ["/Users/foo/mycustomvalues1.yaml", "/Users/foo/mycustomvalues2.yaml"]
+
   /*
-  storage_account = {
-    location            = "eastus"
-    name                = "foohpccsa3"
-    resource_group_name = "app-storageaccount-sandbox-eastus-48936"
-    # subscription_id   = "value"
+  storage_accounts = {
+    # do not change the key names 
+    dali = {
+      name = "dalikxgt"
+      resource_group_name = "app-storageaccount-sandbox-eastus-79735"
+
+      shares = {
+        dali = {
+          name = "dalishare"
+          sub_path   = "dalistorage" //do not change this value
+          category   = "dali" //do not change this value
+          sku        = "Premium_LRS"
+          quota      = 100
+        }
+      }
+    }
+
+    sasha = {
+      name = "sashakxgt"
+      resource_group_name = "app-storageaccount-sandbox-eastus-79735"
+
+      shares = {
+        sasha = {
+          name = "sashashare"
+          sub_path   = "sasha" //do not change this value
+          category   = "sasha" //do not change this value
+          sku        = "Standard_LRS"
+          quota      = 100
+        }
+      }
+    }
+
+    common = {
+      name = "commonkxgt"
+      resource_group_name = "app-storageaccount-sandbox-eastus-79735"
+
+      shares = {
+        data = {
+          name = "datashare"
+          sub_path   = "hpcc-data" //do not change this value
+          category   = "data" //do not change this value
+          sku        = "Standard_LRS"
+          quota      = 100
+        }
+
+        dll = {
+          name = "dllshare"
+          sub_path   = "queries" //do not change this value
+          category   = "dll" //do not change this value
+          sku        = "Standard_LRS"
+          quota      = 100
+        }
+
+        mydropzone = {
+          name = "mydropzoneshare"
+          sub_path   = "dropzone" //do not change this value
+          category   = "lz" //do not change this value
+          sku        = "Standard_LRS"
+          quota      = 100
+        }
+      }
+    }
   }
   */
 }

@@ -1,0 +1,17 @@
+# Default values for hpcc-azurelfile.
+common:
+  mountPrefix: "/var/lib/HPCCSystems"
+  #secretName: "azure-secret"
+  #secretNamespace: "default"
+
+planes:
+%{ for plane in planes }
+- name: "${plane.plane_name}"
+  subPath: "${plane.sub_path}"
+  size: "${plane.quota}"
+  category: "${plane.category}"
+  sku: "${plane.sku}"
+  shareName: "${plane.share_name}"
+  secretName: "${plane.secret_name}"
+  secretNamespace: "${plane.secret_namespace}"
+%{ endfor }
