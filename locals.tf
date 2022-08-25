@@ -50,7 +50,7 @@ locals {
         "quota"            = "${y.quota}Gi"
       }
     ]
-  ]) : toset({ for k, v in local.get_data_planes : k => merge(v, { "secret_name" = "${v.storage_account_name}-azure-secret", "secret_namespace" = "${terraform.workspace}" }) })
+  ]) : toset([for v in local.get_data_planes : merge(v, { "secret_name" = "${v.storage_account_name}-azure-secret", "secret_namespace" = "${terraform.workspace}" })])
 
   group_planes_by_sa = { for k, v in local.get_data_planes : v.storage_account_name => v... }
 

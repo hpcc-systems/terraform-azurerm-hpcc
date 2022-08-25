@@ -1,13 +1,10 @@
 ${jsonencode(flatten([for k, v in storage_accounts: [for x, y in v.shares: {
-        "plane_name"           : "${x}"
-        "storage_account_name" : "${substr(lower("${k}${random_string}"), 0, 24)}"
-        "share_name"           : "${lower("${x}share")}"
-        "quota"                : "${y.quota}Gi"
-        "sub_path"             : "${y.sub_path}"
-        "category"             :"${y.category}"
-        "sku"                  : "${v.account_tier}_${v.replication_type}"
-        "resource_group_name"  : "${resource_group_name}"
-    }
-]
-]))
-}
+    "plane_name"           : "${x}"
+    "storage_account_name" : "${substr(lower("${k}${random_string}"), 0, 24)}"
+    "share_name"           : "${lower("${x}share")}"
+    "quota"                : "${y.quota}Gi"
+    "sub_path"             : "${y.sub_path}"
+    "category"             :"${y.category}"
+    "sku"                  : "${v.account_tier}_${v.replication_type}"
+    "resource_group_name"  : "${resource_group_name}"
+}]]))}
