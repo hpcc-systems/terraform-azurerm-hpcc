@@ -8,7 +8,7 @@
 
 ## Introduction
 
-This module deploys a storage account for the HPCC Systems cloud native platform using remote modules.
+This module deploys storage accounts for the HPCC Systems cloud native platform using remote modules.
 <br>
 
 ## Providers
@@ -128,7 +128,7 @@ Usage Example:
 
 <br>
 
-### The `storage_account` block:
+### The `storage_accounts` block:
 This block deploys the storage accounts for HPCC-Platform data planes. This block is required.
 
  | Name   | Description                                                                           | Type | Default | Valid Options | Required |
