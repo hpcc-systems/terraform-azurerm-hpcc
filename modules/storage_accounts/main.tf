@@ -61,7 +61,7 @@ module "storage_accounts" {
   access_list = {
     "my_ip" = data.http.host_ip.body
   }
-
+  traffic_bypass    = ["AzureServices"]
   service_endpoints = local.vnet
 }
 
