@@ -4,6 +4,17 @@ variable "admin" {
     name  = string
     email = string
   })
+
+  validation {
+    condition = try(
+      regex("hpccdemo", var.admin.name) != "hpccdemo", true
+      ) && try(
+      regex("hpccdemo", var.admin.email) != "hpccdemo", true
+      ) && try(
+      regex("@example.com", var.admin.email) != "@example.com", true
+    )
+    error_message = "Your name and email are required in the admin block and must not contain hpccdemo or @example.com."
+  }
 }
 
 variable "disable_naming_conventions" {
