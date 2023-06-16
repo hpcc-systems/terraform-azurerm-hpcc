@@ -127,3 +127,65 @@ variable "registry" {
   type        = any
   default     = {}
 }
+
+# variable "subscription_id" {
+#   type        = string
+#   description = "Subscription id"
+# }
+
+variable "runbook" {
+  description = "Information to configure multiple runbooks"
+  type = list(object({
+    runbook_name = optional(string, "aks_startstop_runbook") # name of the runbook
+    runbook_type = optional(string, "PowerShell")            # type of the runbook
+    script_name  = optional(string, "start_stop.ps1")        # desired content of the runbook
+  }))
+
+  default = [{}]
+}
+
+variable "aks_automation" {
+  description = "Arguments to automate the Azure Kubernetes Cluster"
+  type = object({
+    automation_account_name       = string
+    local_authentication_enabled  = optional(bool, false)
+    public_network_access_enabled = optional(bool, false)
+
+    schedule = list(object({
+      description     = optional(string, "Stop the Kubernetes cluster.")
+      schedule_name   = optional(string, "aks_stop")
+      runbook_name    = optional(string, "aks_startstop_runbook") # name of the runbook
+      frequency       = string
+      interval        = string
+      start_time      = string
+      week_days       = list(string)
+      operation       = optional(string, "stop")
+      daylight_saving = optional(bool, false)
+    }))
+  })
+}
+
+
+variable "timezone" {
+  description = "Name of timezone"
+  type        = string
+  default     = "America/New_York"
+}
+
+variable "sku_name" {
+  description = "The SKU of the account"
+  type        = string
+  default     = "Basic"
+}
+
+variable "log_verbose" {
+  description = "Verbose log option."
+  type        = string
+  default     = "true"
+}
+
+variable "log_progress" {
+  description = "Progress log option."
+  type        = string
+  default     = "true"
+}

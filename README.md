@@ -572,6 +572,26 @@ This block automatically connect your cluster to your local machine similarly to
  | auto_connect | Automatically connect to the Kubernetes cluster from the host machine by overwriting the current context. | bool | `false` |    no    |
 <br>
 
+### The `automation` block:
+The automation feature allows users to automatically stop the AKS cluster based on a schedule. 
+
+| Name                                                                                                                            | Description                                           | Type             | Default              | Required |
+| ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ---------------- | -------------------- | :------: |
+| <a name="input_automation_account_name"></a> [automation\_account\_name](#input\_automation\_account\_name)                     | Name of automation account                            | `string`         | n/a                  |   yes    |
+| <a name="input_local_authentication_enabled"></a> [local\_authentication\_enabled](#input\_local\_authentication\_enabled)      | Local authenication for automation account            | `bool`           | `false`              |    no    |
+| <a name="input_location"></a> [location](#input\_location)                                                                      | Azure region where the resources would be provisioned | `string`         | `"eastus"`           |    no    |
+| <a name="input_log_progress"></a> [log\_progress](#input\_log\_progress)                                                        | Progress log option.                                  | `string`         | `"true"`             |    no    |
+| <a name="input_log_verbose"></a> [log\_verbose](#input\_log\_verbose)                                                           | Verbose log option.                                   | `string`         | `"true"`             |    no    |
+| <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled) | public network access for automation account          | `bool`           | `false`              |    no    |
+| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)                                 | Resource group name                                   | `string`         | n/a                  |   yes    |
+| <a name="input_runbook"></a> [runbook](#input\_runbook)                                                                         | Information to configure multiple runbooks            | `list(object())` | n/a                  |   yes    |
+| <a name="input_schedule"></a> [schedule](#input\_schedule)                                                                      | Information to schedule a runbook                     | `list(object())` | n/a                  |   yes    |
+| <a name="input_sku_name"></a> [sku\_name](#input\_sku\_name)                                                                    | The SKU of the account                                | `string`         | `"Basic"`            |    no    |
+| <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id)                                               | Subscription id                                       | `string`         | n/a                  |   yes    |
+| <a name="input_tags"></a> [tags](#input\_tags)                                                                                  | Tags to apply to all resources.                       | `map(string)`    | `{}`                 |    no    |
+| <a name="input_timezone"></a> [timezone](#input\_timezone)                                                                      | Name of timezone                                      | `string`         | `"America/New_York"` |    no    |
+<br/>
+
 ## Outputs
 
 | Name            | Description                                                                                                                                                          |

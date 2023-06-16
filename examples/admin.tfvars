@@ -277,3 +277,31 @@ registry = {
   username = "foo@lexisnexisrisk.com"
 }
 */
+
+//Stops the AKS weekday nights at 6PM EST
+aks_automation = {
+  local_authentication_enabled  = false
+  public_network_access_enabled = false
+  automation_account_name       = "aks-stop"
+
+  schedule = [
+    {
+      schedule_name   = "aks_stop"
+      description     = "Stops the AKS weekday nights at 6PM EST"
+      frequency       = "Week" //OneTime, Day, Hour, Week, or Month.
+      interval        = "1"    //cannot be set when frequency is `OneTime`
+      daylight_saving = true
+      start_time      = "12:30" // At least 5 minutes in the future
+      week_days       = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    },
+    # {
+    #   schedule_name   = "aks_start"
+    #   description     = "Starts the AKS weekday nights at 6AM EST"
+    #   frequency       = "Week" //OneTime, Day, Hour, Week, or Month.
+    #   interval        = "1"    //cannot be set when frequency is `OneTime`
+    #   daylight_saving = true
+    #   start_time      = "12:20" // At least 5 minutes in the future
+    #   week_days       = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    # }
+  ]
+}
