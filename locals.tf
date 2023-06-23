@@ -15,14 +15,14 @@ locals {
   tags = var.disable_naming_conventions ? merge(
     var.tags,
     {
-      "admin" = var.admin.name,
-      "email" = var.admin.email
+      "owner" = var.admin.name,
+      "owner_email" = var.admin.email
     }
     ) : merge(
     module.metadata.tags,
     {
-      "admin" = var.admin.name,
-      "email" = var.admin.email
+      "owner" = var.admin.name,
+      "owner_email" = var.admin.email
     },
     try(var.tags)
   )

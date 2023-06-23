@@ -13,7 +13,7 @@ locals {
     var.metadata.resource_group_type != "" ? { resource_group_type = var.metadata.resource_group_type } : {}
   ) : module.metadata.names
 
-  tags = var.disable_naming_conventions ? merge(var.tags, { "admin" = var.admin.name, "email" = var.admin.email }) : merge(module.metadata.tags, { "admin" = var.admin.name, "email" = var.admin.email }, try(var.tags))
+  tags = var.disable_naming_conventions ? merge(var.tags, { "owner" = var.admin.name, "owner_email" = var.admin.email }) : merge(module.metadata.tags, { "owner" = var.admin.name, "owner_email" = var.admin.email }, try(var.tags))
 
   private_subnet_id = module.virtual_network.aks.hpcc.subnets["private"].id
   public_subnet_id  = module.virtual_network.aks.hpcc.subnets["public"].id
