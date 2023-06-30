@@ -69,4 +69,17 @@ locals {
   az_command    = try("az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name} --overwrite", "")
   web_urls      = { auto_launch_eclwatch = "http://$(kubectl get svc --field-selector metadata.name=eclwatch | awk 'NR==2 {print $4}'):8010" }
   is_windows_os = substr(pathexpand("~"), 0, 1) == "/" ? false : true
+
+  runbook      = { for rb in var.runbook : "${rb.runbook_name}" => rb }
+  current_time = timestamp()
+  current_day  = formatdate("EEEE", local.current_time)
+  current_hour = tonumber(formatdate("HH", local.current_time))
+  today        = formatdate("YYYY-MM-DD", local.current_time)
+  tomorrow     = formatdate("YYYY-MM-DD", timeadd(local.current_time, "24h"))
+  # today        = formatdate("YYYY-MM-DD", timeadd(local.current_time, "1h"))
+
+  utc_offset = var.aks_automation.schedule[0].daylight_saving ? 4 : 5
+
+  script   = { for item in fileset("${path.root}/scripts", "*") : (item) => file("${path.root}/scripts/${item}") }
+  schedule = { for s in var.aks_automation.schedule : "${s.schedule_name}" => s }
 }
