@@ -605,7 +605,7 @@ The automation feature allows users to automatically stop the AKS cluster based 
 <ol>
 <li> 
 
-Clone this repo: `git clone https://github.com/gfortil/terraform-azurerm-hpcc.git`. </li>
+Clone this repo: `git clone https://github.com/hpcc-systems/terraform-azurerm-hpcc`. </li>
 
 <li>Linux and MacOS</li>
 <ol>
