@@ -1,4 +1,5 @@
 # Azure - HPCC AKS Root Module
+
 <br>
 
 This module is intended as an example for development and test systems only. It can be used as a blueprint to develop your own production version that meets your organization's security requirements.
@@ -11,22 +12,24 @@ This module deploys an HPCC AKS cluster using remote modules that are listed bel
 <br>
 
 ## Remote Modules
+
 These are the list of all the remote modules.
 
 | Name            | Description                                          | URL                                                                        | Required |
 | --------------- | ---------------------------------------------------- | -------------------------------------------------------------------------- | :------: |
-| subscription    | Queries enabled azure subscription from host machine | https://github.com/Azure-Terraform/terraform-azurerm-subscription-data.git |   yes    |
+| subscription    | Queries enabled azure subscription from host machine | <https://github.com/Azure-Terraform/terraform-azurerm-subscription-data.git> |   yes    |
 | naming          | Enforces naming conventions                          | -                                                                          |   yes    |
-| metadata        | Provides metadata                                    | https://github.com/Azure-Terraform/terraform-azurerm-metadata.git          |   yes    |
-| resource_group  | Creates a resource group                             | https://github.com/Azure-Terraform/terraform-azurerm-resource-group.git    |   yes    |
-| virtual_network | Creates a virtual network                            | https://github.com/Azure-Terraform/terraform-azurerm-virtual-network.git   |   yes    |
-| kubernetes      | Creates an Azure Kubernetes Service Cluster          | https://github.com/Azure-Terraform/terraform-azurerm-kubernetes.git        |   yes    |
+| metadata        | Provides metadata                                    | <https://github.com/Azure-Terraform/terraform-azurerm-metadata.git>          |   yes    |
+| resource_group  | Creates a resource group                             | <https://github.com/Azure-Terraform/terraform-azurerm-resource-group.git>    |   yes    |
+| virtual_network | Creates a virtual network                            | <https://github.com/Azure-Terraform/terraform-azurerm-virtual-network.git>   |   yes    |
 <br>
 
 ## Supported Arguments
+
 <br>
 
-### The `admin` block:
+### The `admin` block
+
 This block contains information on the user who is deploying the cluster. This is used as tags and part of some resource names to identify who deployed a given resource and how to contact that user. This block is required.
 
 | Name  | Description                  | Type   | Default | Required |
@@ -44,7 +47,8 @@ Usage Example:
     }
 <br>
 
-### The `disable_naming_conventions` block:
+### The `disable_naming_conventions` block
+
 When set to `true`, this attribute drops the naming conventions set forth by the python module. This attribute is optional.
 
  | Name                       | Description                 | Type | Default | Required |
@@ -52,7 +56,8 @@ When set to `true`, this attribute drops the naming conventions set forth by the
  | disable_naming_conventions | Disable naming conventions. | bool | `false` |    no    |
 <br>
 
-### The `metadata` block:
+### The `metadata` block
+
 TThe arguments in this block are used as tags and part of resources’ names. This block can be omitted when disable_naming_conventions is set to `true`.
 
  | Name                | Description                  | Type   | Default | Required |
@@ -85,7 +90,8 @@ Usage Example:
 
 <br>
 
-### The `tags` argument:
+### The `tags` argument
+
 The tag attribute can be used for additional tags. The tags must be key value pairs. This block is optional.
 
  | Name | Description               | Type        | Default | Required |
@@ -93,7 +99,8 @@ The tag attribute can be used for additional tags. The tags must be key value pa
  | tags | Additional resource tags. | map(string) | admin   |    no    |
 <br>
 
-### The `resource_group` block:
+### The `resource_group` block
+
 This block creates a resource group (like a folder) for your resources. This block is required.
 
  | Name        | Description                                                       | Type | Default | Required |
@@ -110,7 +117,8 @@ Usage Example:
 
 <br>
 
-### The `virtual_network` block:
+### The `virtual_network` block
+
 This block imports metadata of a virtual network deployed outside of this project. This block is optional.
 
  | Name              | Description                             | Type   | Default | Required |
@@ -133,13 +141,15 @@ Usage Example:
 
 <br>
 
-## The `node_pools` block:
+## The `node_pools` block
+
 The `node-pools` block supports the following arguments:<br>
-`system` - (Required) The system or default node pool. This node pool hosts the system pods by default. The possible arguments for this block are defined below. 
+`system` - (Required) The system or default node pool. This node pool hosts the system pods by default. The possible arguments for this block are defined below.
 
 `addpool` - (Required) The additional node pool configuration. This block name is changeable and must be unique across all additional node pools. At least one additional node pool is required. The possible arguments for this block are defined below.
 
-### The `system` block:
+### The `system` block
+
 This block creates a system node pool. This block is required.
 
 | Name                        | Optional, Required | Description                                                                                                                                                                                                                                                                                                               |
@@ -163,8 +173,9 @@ This block creates a system node pool. This block is required.
 | subnet                      | Optional           | The ID of a Subnet where the Kubernetes Node Pool should exist.                                                                                                                                                                                                                                                           |
 <br>
 
-### The `addpool` block:
-This block creates additional node pools. This block is optional. 
+### The `addpool` block
+
+This block creates additional node pools. This block is optional.
 
 | Name                         | Optional, Required | Description                                                                                                                                                                                                                                                                                                               |
 | ---------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -279,7 +290,8 @@ Usage Example:
     }
 <br>
 
-### The `disable_helm` argument:
+### The `disable_helm` argument
+
 This block disable helm deployments by Terraform. This block is optional and will stop HPCC from being installed.
 
  | Name         | Description                            | Type | Default | Required |
@@ -287,13 +299,14 @@ This block disable helm deployments by Terraform. This block is optional and wil
  | disable_helm | Disable Helm deployments by Terraform. | bool | `false` |    no    |
 <br>
 
-### The `hpcc` block:
+### The `hpcc` block
+
 This block deploys the HPCC helm chart. This block is optional.
 
  | Name                       | Description                                                                                                                                                                      | Type         | Default                        | Required |
  | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------------------------------ | :------: |
- | local_chart                | Path to local chart directory name or tgz file.  Example1: ~/HPCC-Platform/helm/hpcc    Example2: https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-8.6.16-rc1.tgz | string       | null                           |    no    |
- | remote_chart               | URL of the remote chart. Example: https://hpcc-systems.github.io/helm-chart                                                                                                      | string       | null                           |    no    |
+ | local_chart                | Path to local chart directory name or tgz file.  Example1: ~/HPCC-Platform/helm/hpcc    Example2: <https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-8.6.16-rc1.tgz> | string       | null                           |    no    |
+ | remote_chart               | URL of the remote chart. Example: <https://hpcc-systems.github.io/helm-chart>                                                                                                      | string       | null                           |    no    |
  | namespace                  | Namespace to use.                                                                                                                                                                | string       | default                        |    no    |
  | name                       | Release name of the chart.                                                                                                                                                       | string       | myhpcck8s                      |    no    |
  | values                     | List of desired state files to use similar to -f in CLI.                                                                                                                         | list(string) | values-retained-azurefile.yaml |    no    |
@@ -347,15 +360,16 @@ This block deploys the HPCC helm chart. This block is optional.
 
 <br>
 
-### The `storage` block:
+### The `storage` block
+
 This block deploys the HPCC persistent volumes. This block is required.
 
  | Name                       | Description                                                                                                                                                                                                                    | Type         | Default                                                 | Valid Options    |  Required   |
  | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ------------------------------------------------------- | ---------------- | :---------: |
  | default                    | Use AKS provided storage accounts?                                                                                                                                                                                             | bool         | `false`                                                 | `true` , `false` |     no      |
  | version                    | The version of the storage chart.                                                                                                                                                                                              | string       | 0.1.0                                                   |                  |     no      |
- | local_chart                | Path to local chart directory name or tgz file.  Example1: /Users/foo/work/demo/helm-chart/helm/examples/azure/hpcc-azurefile    Example2: https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-azurefile-0.1.0.tgz | string       | null                                                    | no               |
- | remote_chart               | URL of the remote chart. Example: https://hpcc-systems.github.io/helm-chart                                                                                                                                                    | name         | Release name of the chart.                              | string           | `myhpcck8s` | no |
+ | local_chart                | Path to local chart directory name or tgz file.  Example1: /Users/foo/work/demo/helm-chart/helm/examples/azure/hpcc-azurefile    Example2: <https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-azurefile-0.1.0.tgz> | string       | null                                                    | no               |
+ | remote_chart               | URL of the remote chart. Example: <https://hpcc-systems.github.io/helm-chart>                                                                                                                                                    | name         | Release name of the chart.                              | string           | `myhpcck8s` | no |
  | values                     | List of desired state files to use similar to -f in CLI.                                                                                                                                                                       | list(string) | []                                                      | no               |
  | storage_accounts           | The storage account to use.                                                                                                                                                                                                    | object       | Queries attributes' values from storage_accounts module | -                |     no      |
  | version                    | Version of the storage chart.                                                                                                                                                                                                  | string       | 0.1.0                                                   | no               |
@@ -374,7 +388,8 @@ This block deploys the HPCC persistent volumes. This block is required.
  | lint                       | Run the helm chart linter during the plan.                                                                                                                                                                                     | bool         | false                                                   | no               |
 <br>
 
-#### The `storage_accounts` block:
+#### The `storage_accounts` block
+
 This block deploys the HPCC persistent volumes. This block is required.
 
  | Name                | Description                                                          | Type         | Default                     | Valid Options | Required |
@@ -386,7 +401,8 @@ This block deploys the HPCC persistent volumes. This block is required.
  |                     |
 <br>
 
-#### The `shares` block:
+#### The `shares` block
+
 This block defines the list of shares in the storage account. This block is required.
 
  | Name     | Description                           | Type   | Default | Valid Options | Required |
@@ -396,7 +412,7 @@ This block defines the list of shares in the storage account. This block is requ
  | category | The category for the HPCC data plane  | string | -       | -             |   yes    |
  | sku      | The sku for the HPCC data plane.      | string | -       | -             |   yes    |
  | quota    | The size of the share in Gigabytes    | number | -       | -             |   yes    |
- 
+
 Usage Example:
 <br>
 
@@ -489,13 +505,14 @@ Usage Example:
     }
 <br>
 
-### The `elastic4hpcclogs` block:
+### The `elastic4hpcclogs` block
+
 This block deploys the elastic4hpcclogs chart. This block is optional.
 
  | Name                       | Description                                                                                                                                                                                                                 | Type         | Default                 | Required |
  | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------------------- | :------: |
- | local_chart                | Path to local chart directory name or tgz file.  Example1: /Users/foo/work/demo/helm-chart/helm/managed/logging/elastic    Example2: https://github.com/hpcc-systems/helm-chart/raw/master/docs/elastic4hpcclogs-1.2.10.tgz | string       | null                    |    no    |
- | remote_chart               | URL of the remote chart. Example: https://hpcc-systems.github.io/helm-chart                                                                                                                                                 | enable       | Enable elastic4hpcclogs |   bool   | `true` | no |
+ | local_chart                | Path to local chart directory name or tgz file.  Example1: /Users/foo/work/demo/helm-chart/helm/managed/logging/elastic    Example2: <https://github.com/hpcc-systems/helm-chart/raw/master/docs/elastic4hpcclogs-1.2.10.tgz> | string       | null                    |    no    |
+ | remote_chart               | URL of the remote chart. Example: <https://hpcc-systems.github.io/helm-chart>                                                                                                                                                 | enable       | Enable elastic4hpcclogs |   bool   | `true` | no |
  | name                       | Release name of the chart.                                                                                                                                                                                                  | string       | myelastic4hpcclogs      |    no    |
  | version                    | The version of the elastic4hpcclogs                                                                                                                                                                                         | string       | 1.2.8                   |          | no     |
  | values                     | List of desired state files to use similar to -f in CLI.                                                                                                                                                                    | list(string) | -                       |    no    |
@@ -544,7 +561,8 @@ Usage Example:
     }
 <br>
 
-### The `registry` block:
+### The `registry` block
+
 This block authenticates a private Docker repository. This block is optional.
 
  | Name     | Description                                                                | Type   | Default | Required |
@@ -564,7 +582,8 @@ Usage Example:
     }
 <br>
 
-### The `auto_connect` argument:
+### The `auto_connect` argument
+
 This block automatically connect your cluster to your local machine similarly to `az aks get-credentials`.
 
  | Name         | Description                                                                                               | Type | Default | Required |
@@ -572,8 +591,9 @@ This block automatically connect your cluster to your local machine similarly to
  | auto_connect | Automatically connect to the Kubernetes cluster from the host machine by overwriting the current context. | bool | `false` |    no    |
 <br>
 
-### The `automation` block:
-The automation feature allows users to automatically stop the AKS cluster based on a schedule. 
+### The `automation` block
+
+The automation feature allows users to automatically stop the AKS cluster based on a schedule.
 
 | Name                                                                                                                            | Description                                           | Type             | Default              | Required |
 | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ---------------- | -------------------- | :------: |
@@ -601,152 +621,156 @@ The automation feature allows users to automatically stop the AKS cluster based 
 <br>
 
 ## Usage
+
 ### Deploy the Virtual Network Module
+
 <ol>
-<li> 
+<li>
 
 Clone this repo: `git clone https://github.com/gfortil/terraform-azurerm-hpcc.git`. </li>
 
 <li>Linux and MacOS</li>
 <ol>
-<li> 
+<li>
 
 Change directory to terraform-azurerm-hpcc/modules/virtual_network: `cd terraform-azurerm-hpcc/modules/virtual_network` </li>
-<li> 
+<li>
 
 Copy examples/admin.tfvars to terraform-azurerm-hpcc/modules/virtual_network: `cp examples/admin.tfvars .` </li>
 </ol>
 <li>Windows OS</li>
 <ol>
-<li> 
-    
+<li>
+
 Change directory to terraform-azurerm-hpcc/modules/virtual_network: `cd terraform-azurerm-hpcc/modules/virtual_network` </li>
-<li> 
+<li>
 
 Copy examples/admin.tfvars to terraform-azurerm-hpcc/modules/virtual_network: `copy examples\admin.tfvars .` </li>
 </ol>
-<li> 
+<li>
 
 Open `terraform-azurerm-hpcc/modules/virtual_network/admin.tfvars` file. </li>
-<li> 
+<li>
 
 Set attributes to your preferred values. </li>
-<li> 
+<li>
 
 Save `terraform-azurerm-hpcc/modules/virtual_network/admin.tfvars` file. </li>
-<li> 
+<li>
 
 Run `terraform init`. This step is only required before your first `terraform apply`. </li>
-<li> 
+<li>
 
 Run `terraform apply -var-file=admin.tfvars` or `terraform apply -var-file=admin.tfvars -auto-approve`. </li>
-<li> 
+<li>
 
 Type `yes` if you didn't pass the flag `-auto-approve`. </li>
 </ol>
 
 ### Deploy the Storage Account Module
+
 <ol>
 <li>Linux and MacOS</li>
 <ol>
-<li> 
+<li>
 
 Change directory to terraform-azurerm-hpcc/modules/storage_accounts: `cd terraform-azurerm-hpcc/modules/storage_accounts` </li>
-<li> 
+<li>
 
 Copy examples/admin.tfvars to terraform-azurerm-hpcc/modules/storage_accounts: `cp examples/admin.tfvars .` </li>
 </ol>
 <li>Windows OS</li>
 <ol>
-<li> 
-    
+<li>
+
 Change directory to terraform-azurerm-hpcc/modules/storage_accounts: `cd terraform-azurerm-hpcc/modules/storage_accounts` </li>
-<li> 
+<li>
 
 Copy examples/admin.tfvars to terraform-azurerm-hpcc/modules/storage_accounts: `copy examples\admin.tfvars .` </li>
 </ol>
-<li> 
+<li>
 
 Open `terraform-azurerm-hpcc/modules/storage_accounts/admin.tfvars` file. </li>
-<li> 
+<li>
 
 Set attributes to your preferred values. </li>
-<li> 
+<li>
 
 Save `terraform-azurerm-hpcc/modules/storage_accounts/admin.tfvars` file. </li>
-<li> 
+<li>
 
 Run `terraform init`. This step is only required before your first `terraform apply`. </li>
-<li> 
+<li>
 
 Run `terraform apply -var-file=admin.tfvars` or `terraform apply -var-file=admin.tfvars -auto-approve`. </li>
-<li> 
+<li>
 
 Type `yes` if you didn't pass the flag `-auto-approve`. </li>
 </ol>
 
 ### Deploy the AKS Module
+
 <ol>
 <li>Linux and MacOS</li>
 <ol>
-<li> 
+<li>
 
 Change directory to terraform-azurerm-hpcc: `cd terraform-azurerm-hpcc` </li>
-<li> 
+<li>
 
 Copy examples/admin.tfvars to terraform-azurerm-hpcc: `cp examples/admin.tfvars .` </li>
 </ol>
 <li>Windows OS</li>
 <ol>
-<li> 
-    
+<li>
+
 Change directory to terraform-azurerm-hpcc: `cd terraform-azurerm-hpcc` </li>
-<li> 
+<li>
 
 Copy examples/admin.tfvars to terraform-azurerm-hpcc: `copy examples\admin.tfvars .` </li>
 </ol>
-<li> 
+<li>
 
 Open `terraform-azurerm-hpcc/admin.tfvars` file. </li>
-<li> 
+<li>
 
 Set attributes to your preferred values. </li>
-<li> 
+<li>
 
 Save `terraform-azurerm-hpcc/admin.tfvars` file. </li>
-<li> 
+<li>
 
 Run `terraform init`. This step is only required before your first `terraform apply`. </li>
-<li> 
+<li>
 
 Run `terraform apply -var-file=admin.tfvars` or `terraform apply -var-file=admin.tfvars -auto-approve`. </li>
-<li> 
+<li>
 
 Type `yes` if you didn't pass the flag `-auto-approve`. </li>
 <li>
 
 If `auto_connect = true` (in admin.tfvars), skip this step. </li>
 <ol>
-<li> 
+<li>
 
 Copy aks_login command. </li>
-<li> 
+<li>
 
 Run aks_login in your command line. </li>
-<li> 
+<li>
 
 Accept to overwrite your current context. </li>
 </ol>
-<li> 
+<li>
 
 List pods: `kubectl get pods`. </li>
-<li> 
+<li>
 
 Get ECLWatch external IP: `kubectl get svc --field-selector metadata.name=eclwatch | awk 'NR==2 {print $4}'`. </li>
-<li> 
+<li>
 
 Delete cluster: `terraform destroy -var-file=admin.tfvars` or `terraform destroy -var-file=admin.tfvars -auto-approve`. </li>
-<li> 
+<li>
 
 Type: `yes` if flag `-auto-approve` was not set.</li>
 </ol>

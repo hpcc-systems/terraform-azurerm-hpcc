@@ -3,6 +3,11 @@ resource "random_integer" "int" {
   max = 3
 }
 
+resource "random_string" "string" {
+  length  = 4
+  special = false
+}
+
 module "subscription" {
   source          = "github.com/Azure-Terraform/terraform-azurerm-subscription-data.git?ref=v1.0.0"
   subscription_id = data.azurerm_subscription.current.subscription_id
@@ -39,40 +44,40 @@ module "resource_group" {
   tags        = local.tags
 }
 
-module "kubernetes" {
-  source = "github.com/Azure-Terraform/terraform-azurerm-kubernetes.git?ref=v4.2.1"
+# module "kubernetes" {
+#   source = "github.com/Azure-Terraform/terraform-azurerm-kubernetes.git?ref=v4.2.1"
 
-  cluster_name        = local.cluster_name
-  location            = module.resource_group.location
-  names               = local.names
-  tags                = local.tags
-  resource_group_name = module.resource_group.name
-  identity_type       = "UserAssigned" # Allowed values: UserAssigned or SystemAssigned
-  rbac = {
-    enabled        = false
-    ad_integration = false
-  }
+#   cluster_name        = local.cluster_name
+#   location            = module.resource_group.location
+#   names               = local.names
+#   tags                = local.tags
+#   resource_group_name = module.resource_group.name
+#   identity_type       = "UserAssigned" # Allowed values: UserAssigned or SystemAssigned
+#   rbac = {
+#     enabled        = false
+#     ad_integration = false
+#   }
 
-  network_plugin         = "azure"
-  configure_network_role = true
+#   network_plugin         = "azure"
+#   configure_network_role = true
 
-  virtual_network = {
-    subnets = {
-      private = {
-        id = local.virtual_network.private_subnet_id
-      }
-      public = {
-        id = local.virtual_network.public_subnet_id
-      }
-    }
-    route_table_id = local.virtual_network.route_table_id
-  }
+#   virtual_network = {
+#     subnets = {
+#       private = {
+#         id = local.virtual_network.private_subnet_id
+#       }
+#       public = {
+#         id = local.virtual_network.public_subnet_id
+#       }
+#     }
+#     route_table_id = local.virtual_network.route_table_id
+#   }
 
-  node_pools = var.node_pools
+#   node_pools = var.node_pools
 
-  default_node_pool = "system" //name of the sub-key, which is the default node pool.
+#   default_node_pool = "system" //name of the sub-key, which is the default node pool.
 
-}
+# }
 
 resource "kubernetes_secret" "sa_secret" {
   for_each = local.storage_accounts
@@ -112,31 +117,31 @@ resource "kubernetes_secret" "private_docker_registry" {
 resource "helm_release" "hpcc" {
   count = var.disable_helm ? 0 : 1
 
-  name                       = can(var.hpcc.name) ? var.hpcc.name : "myhpcck8s"
-  version                    = can(var.hpcc.version) ? var.hpcc.version : null
-  chart                      = can(var.hpcc.remote_chart) ? "hpcc" : var.hpcc.local_chart
-  repository                 = can(var.hpcc.remote_chart) ? var.hpcc.remote_chart : null
-  create_namespace           = true
-  namespace                  = try(var.hpcc.namespace, terraform.workspace)
-  atomic                     = try(var.hpcc.atomic, false)
-  recreate_pods              = try(var.hpcc.recreate_pods, false)
-  reuse_values               = try(var.hpcc.reuse_values, false)
-  reset_values               = try(var.hpcc.reset_values, false)
-  force_update               = try(var.hpcc.force_update, false)
-  cleanup_on_fail            = try(var.hpcc.cleanup_on_fail, false)
-  disable_openapi_validation = try(var.hpcc.disable_openapi_validation, false)
-  max_history                = try(var.hpcc.max_history, 0)
-  wait                       = try(var.hpcc.wait, true)
-  dependency_update          = try(var.hpcc.dependency_update, false)
-  timeout                    = try(var.hpcc.timeout, 480)
-  wait_for_jobs              = try(var.hpcc.wait_for_jobs, false)
-  lint                       = try(var.hpcc.lint, false)
+  name                       = var.hpcc.name
+  version                    = var.hpcc.version
+  chart                      = var.hpcc.remote_chart != null ? "hpcc" : var.hpcc.local_chart
+  repository                 = var.hpcc.remote_chart
+  create_namespace           = var.hpcc.create_namespace
+  namespace                  = var.hpcc.namespace
+  atomic                     = var.hpcc.atomic
+  recreate_pods              = var.hpcc.recreate_pods
+  reuse_values               = var.hpcc.reuse_values
+  reset_values               = var.hpcc.reset_values
+  force_update               = var.hpcc.force_update
+  cleanup_on_fail            = var.hpcc.cleanup_on_fail
+  disable_openapi_validation = var.hpcc.disable_openapi_validation
+  max_history                = var.hpcc.max_history
+  wait                       = var.hpcc.wait
+  dependency_update          = var.hpcc.dependency_update
+  timeout                    = var.hpcc.timeout
+  wait_for_jobs              = var.hpcc.wait_for_jobs
+  lint                       = var.hpcc.lint
 
-  values = concat(var.elastic4hpcclogs.enable ? [data.http.elastic4hpcclogs_hpcc_logaccess.body] : [], var.hpcc.expose_eclwatch ? [file("${path.root}/values/esp.yaml")] : [],
-  [file("${path.root}/values/values-retained-azurefile.yaml")], try([for v in var.hpcc.values : file(v)], []))
+  values = concat(var.elastic4hpcclogs.enable ? [data.http.elastic4hpcclogs_hpcc_logaccess.request_body] : [], var.hpcc.expose_eclwatch ? [file("${path.root}/values/esp.yaml")] : [],
+  [file("${path.root}/values/values-retained-azurefile.yaml")], [for v in var.hpcc.values : file(v)])
 
   dynamic "set" {
-    for_each = can(var.hpcc.image_root) ? [1] : []
+    for_each = var.hpcc.image_root != null ? [1] : []
     content {
       name  = "global.image.root"
       value = var.hpcc.image_root
@@ -144,7 +149,7 @@ resource "helm_release" "hpcc" {
   }
 
   dynamic "set" {
-    for_each = can(var.hpcc.image_name) ? [1] : []
+    for_each = var.hpcc.image_name != null ? [1] : []
     content {
       name  = "global.image.name"
       value = var.hpcc.image_name
@@ -152,7 +157,7 @@ resource "helm_release" "hpcc" {
   }
 
   dynamic "set" {
-    for_each = can(var.hpcc.image_version) ? [1] : []
+    for_each = var.hpcc.image_version != null ? [1] : []
     content {
       name  = "global.image.version"
       value = var.hpcc.image_version
@@ -170,36 +175,36 @@ resource "helm_release" "hpcc" {
   depends_on = [
     helm_release.elastic4hpcclogs,
     helm_release.storage,
-    module.kubernetes
+    azurerm_kubernetes_cluster.aks
   ]
 }
 
 resource "helm_release" "elastic4hpcclogs" {
   count = var.disable_helm || !var.elastic4hpcclogs.enable ? 0 : 1
 
-  name                       = can(var.elastic4hpcclogs.name) ? var.elastic4hpcclogs.name : "myelastic4hpcclogs"
-  namespace                  = try(var.hpcc.namespace, terraform.workspace)
-  chart                      = can(var.elastic4hpcclogs.remote_chart) ? "elastic4hpcclogs" : var.elastic4hpcclogs.local_chart
-  repository                 = can(var.elastic4hpcclogs.remote_chart) ? var.elastic4hpcclogs.remote_chart : null
-  version                    = can(var.elastic4hpcclogs.version) ? var.elastic4hpcclogs.version : null
-  values                     = try([for v in var.elastic4hpcclogs.values : file(v)], [])
-  create_namespace           = true
-  atomic                     = try(var.elastic4hpcclogs.atomic, false)
-  force_update               = try(var.elastic4hpcclogs.force_update, false)
-  recreate_pods              = try(var.elastic4hpcclogs.recreate_pods, false)
-  reuse_values               = try(var.elastic4hpcclogs.reuse_values, false)
-  reset_values               = try(var.elastic4hpcclogs.reset_values, false)
-  cleanup_on_fail            = try(var.elastic4hpcclogs.cleanup_on_fail, false)
-  disable_openapi_validation = try(var.elastic4hpcclogs.disable_openapi_validation, false)
-  wait                       = try(var.elastic4hpcclogs.wait, true)
-  max_history                = try(var.storage.max_history, 0)
-  dependency_update          = try(var.elastic4hpcclogs.dependency_update, false)
-  timeout                    = try(var.elastic4hpcclogs.timeout, 300)
-  wait_for_jobs              = try(var.elastic4hpcclogs.wait_for_jobs, false)
-  lint                       = try(var.elastic4hpcclogs.lint, false)
+  name                       = var.elastic4hpcclogs.name
+  namespace                  = var.hpcc.namespace
+  chart                      = var.elastic4hpcclogs.remote_chart != null ? "elastic4hpcclogs" : var.elastic4hpcclogs.local_chart
+  repository                 = var.elastic4hpcclogs.remote_chart
+  version                    = var.elastic4hpcclogs.version
+  values                     = [for v in var.elastic4hpcclogs.values : file(v)]
+  create_namespace           = var.elastic4hpcclogs.create_namespace
+  atomic                     = var.elastic4hpcclogs.atomic
+  force_update               = var.elastic4hpcclogs.force_update
+  recreate_pods              = var.elastic4hpcclogs.recreate_pods
+  reuse_values               = var.elastic4hpcclogs.reuse_values
+  reset_values               = var.elastic4hpcclogs.reset_values
+  cleanup_on_fail            = var.elastic4hpcclogs.cleanup_on_fail
+  disable_openapi_validation = var.elastic4hpcclogs.disable_openapi_validation
+  wait                       = var.elastic4hpcclogs.wait
+  max_history                = var.storage.max_history
+  dependency_update          = var.elastic4hpcclogs.dependency_update
+  timeout                    = var.elastic4hpcclogs.timeout
+  wait_for_jobs              = var.elastic4hpcclogs.wait_for_jobs
+  lint                       = var.elastic4hpcclogs.lint
 
   dynamic "set" {
-    for_each = can(var.elastic4hpcclogs.expose) ? [1] : []
+    for_each = var.elastic4hpcclogs.expose ? [1] : []
     content {
       type  = "string"
       name  = "kibana.service.annotations.service\\.beta\\.kubernetes\\.io/azure-load-balancer-internal"
@@ -215,29 +220,29 @@ resource "helm_release" "elastic4hpcclogs" {
 resource "helm_release" "storage" {
   count = var.disable_helm ? 0 : 1
 
-  name                       = "azstorage"
-  chart                      = can(var.storage.remote_chart) ? "hpcc-azurefile" : var.storage.local_chart
-  repository                 = can(var.storage.remote_chart) ? var.storage.remote_chart : null
-  version                    = can(var.storage.version) ? var.storage.version : null
-  values                     = concat(var.storage.default ? [] : [local.hpcc_azurefile], try([for v in var.storage.values : file(v)], []))
-  create_namespace           = true
-  namespace                  = try(var.hpcc.namespace, terraform.workspace)
-  atomic                     = try(var.storage.atomic, false)
-  force_update               = try(var.storage.force_update, false)
-  recreate_pods              = try(var.storage.recreate_pods, false)
-  reuse_values               = try(var.storage.reuse_values, false)
-  reset_values               = try(var.storage.reset_values, false)
-  cleanup_on_fail            = try(var.storage.cleanup_on_fail, null)
-  disable_openapi_validation = try(var.storage.disable_openapi_validation, false)
-  wait                       = try(var.storage.wait, true)
-  max_history                = try(var.storage.max_history, 0)
-  dependency_update          = try(var.storage.dependency_update, false)
-  timeout                    = try(var.storage.timeout, 600)
-  wait_for_jobs              = try(var.storage.wait_for_jobs, false)
-  lint                       = try(var.storage.lint, false)
+  name                       = var.storage.name
+  chart                      = var.storage.remote_chart != null ? "hpcc-azurefile" : var.storage.local_chart
+  repository                 = var.storage.remote_chart
+  version                    = var.storage.version
+  values                     = concat([local.hpcc_azurefile], [for v in var.storage.values : file(v)])
+  create_namespace           = var.storage.create_namespace
+  namespace                  = var.storage.namespace
+  atomic                     = var.storage.atomic
+  force_update               = var.storage.force_update
+  recreate_pods              = var.storage.recreate_pods
+  reuse_values               = var.storage.reuse_values
+  reset_values               = var.storage.reset_values
+  cleanup_on_fail            = var.storage.cleanup_on_fail
+  disable_openapi_validation = var.storage.disable_openapi_validation
+  wait                       = var.storage.wait
+  max_history                = var.storage.max_history
+  dependency_update          = var.storage.dependency_update
+  timeout                    = var.storage.timeout
+  wait_for_jobs              = var.storage.wait_for_jobs
+  lint                       = var.storage.lint
 
   depends_on = [
-    module.kubernetes
+    azurerm_kubernetes_cluster.aks
   ]
 }
 
@@ -249,7 +254,7 @@ resource "null_resource" "az" {
     interpreter = local.is_windows_os ? ["PowerShell", "-Command"] : ["/bin/bash", "-c"]
   }
 
-  triggers = { kubernetes_id = module.kubernetes.id } //must be run after the Kubernetes cluster is deployed.
+  triggers = { kubernetes_id = azurerm_kubernetes_cluster.aks.id } //must be run after the Kubernetes cluster is deployed.
 }
 
 resource "null_resource" "launch_svc_url" {
