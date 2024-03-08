@@ -1,7 +1,7 @@
 data "azurerm_subscription" "primary" {}
 
 resource "azurerm_automation_account" "automation_account" {
-  name                = var.aks_automation.automation_account_name
+  name                = "${var.aks_automation.automation_account_name}-${random_string.string.result}"
   location            = local.virtual_network.location
   resource_group_name = module.resource_group.name
   sku_name            = var.sku_name
@@ -47,7 +47,7 @@ resource "azurerm_automation_schedule" "schedule" {
   resource_group_name     = module.resource_group.name
   # TODO: this assumes the timezone is "America/New_York" and doesn't account for DST - should be fixed
   start_time = length(each.value.start_time) == 5 && contains(["Week", "Month"], each.value.frequency) ? contains(each.value.week_days, local.current_day) && tonumber(substr(each.value.start_time, 0, 2)) >= local.current_hour ? "${local.today}T${each.value.start_time}:15-0${local.utc_offset}:00" : "${local.tomorrow}T${each.value.start_time}:15-0${local.utc_offset}:00" : "${local.today}T${each.value.start_time}:15-0${local.utc_offset}:00"
-  timezone   = var.timezone
+  timezone   = each.value.timezone
   #   expiry_time = each.value.expiry_time
 }
 
@@ -59,9 +59,9 @@ resource "azurerm_automation_job_schedule" "job_schedule" {
   automation_account_name = azurerm_automation_account.automation_account.name
 
   parameters = {
-    resourcename      = module.kubernetes.name
+    resourcename      = azurerm_kubernetes_cluster.aks.name
     resourcegroupname = module.resource_group.name
     operation         = each.value.operation
-    automationaccount = var.aks_automation.automation_account_name
+    automationaccount = "${var.aks_automation.automation_account_name}-${random_string.string.result}"
   }
 }

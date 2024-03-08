@@ -15,13 +15,13 @@ locals {
   tags = var.disable_naming_conventions ? merge(
     var.tags,
     {
-      "owner" = var.admin.name,
+      "owner"       = var.admin.name,
       "owner_email" = var.admin.email
     }
     ) : merge(
     module.metadata.tags,
     {
-      "owner" = var.admin.name,
+      "owner"       = var.admin.name,
       "owner_email" = var.admin.email
     },
     try(var.tags)
@@ -31,7 +31,7 @@ locals {
 
   get_data_planes = fileexists("${path.module}/modules/storage_accounts/bin/data_planes.json") ? jsondecode(file("${path.module}/modules/storage_accounts/bin/data_planes.json")) : null
 
-  virtual_network = can(var.virtual_network.private_subnet_id) && can(var.virtual_network.public_subnet_id) && can(var.virtual_network.route_table_id) ? var.virtual_network : local.get_vnet_data
+  virtual_network = var.virtual_network != null ? var.virtual_network : local.get_vnet_data
 
   cluster_name = "${local.names.resource_group_type}-${local.names.product_name}-terraform-${local.names.location}-${var.admin.name}${random_integer.int.result}-${terraform.workspace}"
 
@@ -66,7 +66,7 @@ locals {
   elastic4hpcclogs_hpcc_logaccess      = "https://raw.githubusercontent.com/hpcc-systems/helm-chart/${local.hpcc_chart_major_minor_point_version}/helm/managed/logging/elastic/elastic4hpcclogs-hpcc-logaccess.yaml"
 
 
-  az_command    = try("az aks get-credentials --name ${module.kubernetes.name} --resource-group ${module.resource_group.name} --overwrite", "")
+  az_command    = try("az aks get-credentials --name ${azurerm_kubernetes_cluster.aks.name} --resource-group ${module.resource_group.name} --overwrite", "")
   web_urls      = { auto_launch_eclwatch = "http://$(kubectl get svc --field-selector metadata.name=eclwatch | awk 'NR==2 {print $4}'):8010" }
   is_windows_os = substr(pathexpand("~"), 0, 1) == "/" ? false : true
 
@@ -82,4 +82,35 @@ locals {
 
   script   = { for item in fileset("${path.root}/scripts", "*") : (item) => file("${path.root}/scripts/${item}") }
   schedule = { for s in var.aks_automation.schedule : "${s.schedule_name}" => s }
+
+  user_assigned_identity_name = (var.user_assigned_identity_name == null ? "aks-${local.cluster_name}-control-plane" : var.user_assigned_identity_name)
+
+  aks_identity_id = (var.identity_type == "SystemAssigned" ? azurerm_kubernetes_cluster.aks.identity.0.principal_id :
+  (var.user_assigned_identity == null ? azurerm_user_assigned_identity.aks.0.principal_id : var.user_assigned_identity.principal_id))
+
+  node_resource_group = (var.node_resource_group != null ? var.node_resource_group : "MC_${local.cluster_name}")
+
+  dns_prefix = (var.dns_prefix != null ? var.dns_prefix :
+  "${local.names.product_name}-${local.names.environment}-${local.names.location}")
+
+  node_pools = zipmap(keys(var.node_pools), [for node_pool in values(var.node_pools) : merge(var.node_pool_defaults, node_pool)])
+
+  windows_nodes = (length([for v in local.node_pools : v if lower(v.os_type) == "windows"]) > 0 ? true : false)
+
+  additional_node_pools = { for k, v in local.node_pools : k => v if k != var.default_node_pool }
+
+  kube_config = (var.rbac.enabled ? azurerm_kubernetes_cluster.aks.kube_admin_config.0 : azurerm_kubernetes_cluster.aks.kube_config.0)
+
+  vnet_ids = {
+    subnets = {
+      private = {
+        id = local.virtual_network.private_subnet_id
+      }
+      public = {
+        id = local.virtual_network.public_subnet_id
+      }
+    }
+    route_table_id = local.virtual_network.route_table_id
+  }
+
 }

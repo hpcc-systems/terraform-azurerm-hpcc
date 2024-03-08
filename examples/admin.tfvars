@@ -21,6 +21,19 @@ resource_group = {
   unique_name = true
 }
 
+rbac = {
+  enabled = false
+}
+
+# rbac_admin_object_ids = {
+#   "user1" = "value"
+# }
+
+identity_type = "UserAssigned"
+
+network_plugin         = "azure"
+configure_network_role = true
+
 node_pools = {
   system = {
     vm_size                      = "Standard_D4_v4"
@@ -124,11 +137,11 @@ hpcc = {
   lint                       = false
   remote_chart               = "https://hpcc-systems.github.io/helm-chart"
   # local_chart = "/Users/foo/work/demo/helm-chart/helm/hpcc" #Other examples: local_chart = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-8.6.16-rc1.tgz"
-  # version                    = "8.6.14-rc2"
+  # version = "9.4.38"
   # values  = ["/Users/foo/mycustomvalues1.yaml", "/Users/foo/mycustomvalues2.yaml"]
   # image_root    = "west.lexisnexisrisk.com"
   # image_name    = "platform-core-ln"
-  # image_version = "8.6.18-rc1"
+  image_version = "9.4.38-rc1"
 }
 
 storage = {
@@ -220,7 +233,7 @@ storage = {
 }
 
 elastic4hpcclogs = {
-  enable                     = true
+  enable                     = false
   expose                     = true
   name                       = "myelastic4hpcclogs"
   atomic                     = true
@@ -287,11 +300,12 @@ aks_automation = {
   schedule = [
     {
       schedule_name   = "aks_stop"
-      description     = "Stops the AKS weekday nights at 6PM EST"
+      description     = "Stops the AKS weekday nights"
       frequency       = "Week" //OneTime, Day, Hour, Week, or Month.
       interval        = "1"    //cannot be set when frequency is `OneTime`
       daylight_saving = true
-      start_time      = "12:30" // At least 5 minutes in the future
+      start_time      = "19:00" // At least 5 minutes in the future
+      timezone        = "America/New_York"
       week_days       = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     },
     # {
