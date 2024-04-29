@@ -112,6 +112,10 @@ storage_accounts = {
   }
 }
 
+# authorized_ip_ranges = {
+#   "ip_1" = ""
+# }
+
 # disable_naming_conventions = false # true will enforce all the arguments of the metadata block above
 
 # Provide an existing virtual network deployed outside of this project

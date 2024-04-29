@@ -1,7 +1,7 @@
 data "azurerm_advisor_recommendations" "advisor" {
 
   filter_by_category        = ["Security", "Cost"]
-  filter_by_resource_groups = try([module.resource_group.name, var.storage.storage_account.resource_group_name], [module.resource_group.name])
+  filter_by_resource_groups = try([azurerm_resource_group.default["aks"].name, var.storage.storage_account.resource_group_name], [azurerm_resource_group.default["aks"].name])
 }
 
 data "http" "host_ip" {
@@ -21,4 +21,11 @@ data "azurerm_storage_account" "hpccsa" {
 data "http" "elastic4hpcclogs_hpcc_logaccess" {
 
   url = local.elastic4hpcclogs_hpcc_logaccess
+}
+
+data "azurerm_automation_account" "default" {
+  count = var.aks_automation.create_new_account ? 0 : 1
+
+  name                = var.aks_automation.automation_account_name
+  resource_group_name = var.aks_automation.resource_group_name
 }

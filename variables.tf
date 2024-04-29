@@ -83,15 +83,6 @@ variable "tags" {
   }
 }
 
-variable "resource_group" {
-  description = "Resource group module variables."
-  type        = any
-
-  default = {
-    unique_name = true
-  }
-}
-
 variable "virtual_network" {
   description = "Virtual network attributes."
   type        = any
@@ -219,7 +210,10 @@ variable "runbook" {
 variable "aks_automation" {
   description = "Arguments to automate the Azure Kubernetes Cluster"
   type = object({
-    automation_account_name       = string
+    create_new_account            = optional(bool, false)
+    create_new_role_assignment    = optional(bool, false)
+    automation_account_name       = optional(string, "aks-automation-default")
+    resource_group_name           = optional(string, "aa-us-hpccplatform-dev-eastus")
     local_authentication_enabled  = optional(bool, false)
     public_network_access_enabled = optional(bool, false)
 
