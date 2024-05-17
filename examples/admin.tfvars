@@ -3,18 +3,6 @@ admin = {
   email = "hpccdemo@example.com"
 }
 
-metadata = {
-  project             = "hpccdemo"
-  product_name        = "aks"
-  business_unit       = "commercial"
-  environment         = "sandbox"
-  market              = "us"
-  product_group       = "contoso"
-  resource_group_type = "app"
-  sre_team            = "hpccplatform"
-  subscription_type   = "dev"
-}
-
 tags = { "justification" = "testing" }
 
 resource_group = {
@@ -295,7 +283,10 @@ registry = {
 aks_automation = {
   local_authentication_enabled  = false
   public_network_access_enabled = false
-  automation_account_name       = "aks-stop"
+  automation_account_name       = "aks-automation-default-SYT0"
+  resource_group_name           = "aa-us-hpccplatform-dev-eastus"
+  create_new_account            = false
+  create_new_role_assignment    = false
 
   schedule = [
     {

@@ -54,3 +54,9 @@ variable "virtual_network" {
   type        = any
   default     = {}
 }
+
+variable "authorized_ip_ranges" {
+  description = "Authorized IP ranges"
+  type        = map(string)
+  default     = {}
+}

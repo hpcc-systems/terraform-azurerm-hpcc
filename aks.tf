@@ -1,8 +1,8 @@
 resource "azurerm_user_assigned_identity" "aks" {
   count = (var.identity_type == "UserAssigned" && var.user_assigned_identity == null ? 1 : 0)
 
-  resource_group_name = module.resource_group.name
-  location            = module.resource_group.location
+  resource_group_name = azurerm_resource_group.default["aks"].name
+  location            = azurerm_resource_group.default["aks"].location
   name                = local.user_assigned_identity_name
 }
 
@@ -27,14 +27,14 @@ resource "azurerm_kubernetes_cluster" "aks" {
   #   depends_on = [azurerm_role_assignment.route_table_network_contributor]
 
   name                = local.cluster_name
-  location            = module.resource_group.location
-  resource_group_name = module.resource_group.name
+  location            = azurerm_resource_group.default["aks"].location
+  resource_group_name = azurerm_resource_group.default["aks"].name
   tags                = local.tags
 
   sku_tier            = var.sku_tier
   kubernetes_version  = var.kubernetes_version
   node_resource_group = local.node_resource_group
-  dns_prefix          = local.dns_prefix
+  dns_prefix          = local.dns_prefix != null ? local.dns_prefix : "hpcc-platform"
 
   private_cluster_enabled = var.private_cluster_enabled
 
