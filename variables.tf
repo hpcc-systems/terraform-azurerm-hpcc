@@ -420,11 +420,11 @@ variable "node_pool_defaults" {
     vm_size                      = string
     zones                        = list(number)
     node_count                   = number
-    enable_auto_scaling          = bool
+    auto_scaling_enabled         = bool
     min_count                    = number
     max_count                    = number
-    enable_host_encryption       = bool
-    enable_node_public_ip        = bool
+    host_encryption_enabled      = bool
+    node_public_ip_enabled       = bool
     max_pods                     = number
     node_labels                  = map(string)
     only_critical_addons_enabled = bool
@@ -449,11 +449,11 @@ variable "node_pool_defaults" {
     vm_size                      = "Standard_B2s"
     zones                        = [1, 2, 3]
     node_count                   = 1
-    enable_auto_scaling          = false
+    auto_scaling_enabled         = false
     min_count                    = null
     max_count                    = null
-    enable_host_encryption       = false
-    enable_node_public_ip        = false
+    host_encryption_enabled      = false
+    node_public_ip_enabled       = false
     max_pods                     = null
     node_labels                  = null
     only_critical_addons_enabled = false
@@ -480,4 +480,9 @@ variable "azure_policy_enabled" {
   description = "to apply at-scale enforcements and safeguards on your clusters in a centralized, consistent manner"
   type        = bool
   default     = false
+}
+
+variable "subscription_id" {
+  description = "Subscription id"
+  type        = string
 }

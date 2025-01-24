@@ -15,16 +15,16 @@ locals {
   tags = var.disable_naming_conventions ? merge(
     var.tags,
     {
-      "owner"     = var.admin.name,
-      "owner_email"     = var.admin.email,
-      "workspace" = terraform.workspace
+      "owner"       = var.admin.name,
+      "owner_email" = var.admin.email,
+      "workspace"   = terraform.workspace
     }
     ) : merge(
     module.metadata.tags,
     {
-      "owner"     = var.admin.name,
-      "owner_email"     = var.admin.email,
-      "workspace" = terraform.workspace
+      "owner"       = var.admin.name,
+      "owner_email" = var.admin.email,
+      "workspace"   = terraform.workspace
     },
     try(var.tags)
   )

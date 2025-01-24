@@ -5,9 +5,7 @@ admin = {
 
 tags = { "justification" = "testing" }
 
-resource_group = {
-  unique_name = true
-}
+subscription_id = ""
 
 rbac = {
   enabled = false
@@ -26,14 +24,14 @@ node_pools = {
   system = {
     vm_size                      = "Standard_D4_v4"
     node_count                   = 1
-    enable_auto_scaling          = true
+    auto_scaling_enabled         = true
     only_critical_addons_enabled = true
     min_count                    = 1
     max_count                    = 1
     availability_zones           = []
     subnet                       = "public"
-    enable_host_encryption       = false
-    enable_node_public_ip        = false
+    host_encryption_enabled      = false
+    node_public_ip_enabled       = false
     os_disk_type                 = "Managed"
     type                         = "VirtualMachineScaleSets"
     # max_pods             = 10
@@ -46,7 +44,7 @@ node_pools = {
 
   addpool1 = {
     vm_size                      = "Standard_D4_v4"
-    enable_auto_scaling          = true
+    auto_scaling_enabled         = true
     node_count                   = 2
     min_count                    = 1
     max_count                    = 2
@@ -57,8 +55,8 @@ node_pools = {
     max_surge                    = "1"
     os_type                      = "Linux"
     priority                     = "Regular"
-    enable_host_encryption       = false
-    enable_node_public_ip        = false
+    host_encryption_enabled      = false
+    node_public_ip_enabled       = false
     only_critical_addons_enabled = false
     os_disk_type                 = "Managed"
     type                         = "VirtualMachineScaleSets"
@@ -75,7 +73,7 @@ node_pools = {
 
   addpool2 = {
     vm_size                      = "Standard_D4_v4"
-    enable_auto_scaling          = true
+    auto_scaling_enabled         = true
     node_count                   = 2
     min_count                    = 1
     max_count                    = 2
@@ -86,8 +84,8 @@ node_pools = {
     max_surge                    = "1"
     os_type                      = "Linux"
     priority                     = "Regular"
-    enable_host_encryption       = false
-    enable_node_public_ip        = false
+    host_encryption_enabled      = false
+    node_public_ip_enabled       = false
     only_critical_addons_enabled = false
     os_disk_type                 = "Managed"
     type                         = "VirtualMachineScaleSets"
@@ -108,6 +106,7 @@ node_pools = {
 
 hpcc = {
   name                       = "myhpcck8s"
+  image_version              = "9.10.0-rc3"
   expose_eclwatch            = true
   atomic                     = true
   recreate_pods              = false
@@ -125,11 +124,9 @@ hpcc = {
   lint                       = false
   remote_chart               = "https://hpcc-systems.github.io/helm-chart"
   # local_chart = "/Users/foo/work/demo/helm-chart/helm/hpcc" #Other examples: local_chart = "https://github.com/hpcc-systems/helm-chart/raw/master/docs/hpcc-8.6.16-rc1.tgz"
-  # version = "9.4.38"
   # values  = ["/Users/foo/mycustomvalues1.yaml", "/Users/foo/mycustomvalues2.yaml"]
   # image_root    = "west.lexisnexisrisk.com"
   # image_name    = "platform-core-ln"
-  image_version = "9.4.38-rc1"
 }
 
 storage = {
