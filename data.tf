@@ -4,10 +4,6 @@ data "azurerm_advisor_recommendations" "advisor" {
   filter_by_resource_groups = try([azurerm_resource_group.default["aks"].name, var.storage.storage_account.resource_group_name], [azurerm_resource_group.default["aks"].name])
 }
 
-data "http" "host_ip" {
-  url = "http://ipv4.icanhazip.com"
-}
-
 data "azurerm_subscription" "current" {
 }
 

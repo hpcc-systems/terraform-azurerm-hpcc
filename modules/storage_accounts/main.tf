@@ -58,9 +58,7 @@ module "storage_accounts" {
   access_tier               = each.value.access_tier
   enable_large_file_share   = each.value.enable_large_file_share
   shared_access_key_enabled = each.value.shared_access_key_enabled
-  access_list = merge({
-    "my_ip" = data.http.host_ip.response_body
-  }, var.authorized_ip_ranges)
+  access_list = local.authorized_ips
   traffic_bypass    = ["AzureServices"]
   service_endpoints = local.vnet
 }

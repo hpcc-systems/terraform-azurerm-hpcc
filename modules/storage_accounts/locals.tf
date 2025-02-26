@@ -71,4 +71,8 @@ locals {
       resource_group_name = module.resource_group.name
     }
   )
+
+  authorized_ips = use_authorized_ip_ranges_only ? var.authorized_ip_ranges : merge({
+    "my_ip" = null_resource.get_host_public_ip.provisioner.0.outputs.stdout
+  }, var.authorized_ip_ranges)
 }
