@@ -72,7 +72,7 @@ locals {
     }
   )
 
-  authorized_ips = use_authorized_ip_ranges_only ? var.authorized_ip_ranges : merge({
-    "my_ip" = null_resource.get_host_public_ip.provisioner.0.outputs.stdout
+  authorized_ips = var.use_authorized_ip_ranges_only ? var.authorized_ip_ranges : merge({
+    "my_ip" = data.local_file.public_ip.content
   }, var.authorized_ip_ranges)
 }
