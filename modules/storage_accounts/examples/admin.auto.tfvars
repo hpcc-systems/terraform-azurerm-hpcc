@@ -112,6 +112,8 @@ storage_accounts = {
   }
 }
 
+use_authorized_ip_ranges_only = false
+
 # authorized_ip_ranges = {
 #   "ip_1" = ""
 # }

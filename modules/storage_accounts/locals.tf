@@ -71,4 +71,8 @@ locals {
       resource_group_name = module.resource_group.name
     }
   )
+
+  authorized_ips = var.use_authorized_ip_ranges_only ? var.authorized_ip_ranges : merge({
+    "my_ip" = data.local_file.public_ip.content
+  }, var.authorized_ip_ranges)
 }

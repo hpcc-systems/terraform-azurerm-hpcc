@@ -60,3 +60,9 @@ variable "authorized_ip_ranges" {
   type        = map(string)
   default     = {}
 }
+
+variable "use_authorized_ip_ranges_only" {
+  description = "Should Terraform only use the provided IPs for authorization?"
+  type        = bool
+  default     = false
+}
