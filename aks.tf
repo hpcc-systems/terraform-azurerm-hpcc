@@ -53,12 +53,12 @@ resource "azurerm_kubernetes_cluster" "aks" {
     vm_size                      = local.node_pools[var.default_node_pool].vm_size
     os_disk_size_gb              = local.node_pools[var.default_node_pool].os_disk_size_gb
     os_disk_type                 = local.node_pools[var.default_node_pool].os_disk_type
-    enable_auto_scaling          = local.node_pools[var.default_node_pool].enable_auto_scaling
-    node_count                   = (local.node_pools[var.default_node_pool].enable_auto_scaling ? null : local.node_pools[var.default_node_pool].node_count)
-    min_count                    = (local.node_pools[var.default_node_pool].enable_auto_scaling ? local.node_pools[var.default_node_pool].min_count : null)
-    max_count                    = (local.node_pools[var.default_node_pool].enable_auto_scaling ? local.node_pools[var.default_node_pool].max_count : null)
-    enable_host_encryption       = local.node_pools[var.default_node_pool].enable_host_encryption
-    enable_node_public_ip        = local.node_pools[var.default_node_pool].enable_node_public_ip
+    auto_scaling_enabled         = local.node_pools[var.default_node_pool].auto_scaling_enabled
+    node_count                   = (local.node_pools[var.default_node_pool].auto_scaling_enabled ? null : local.node_pools[var.default_node_pool].node_count)
+    min_count                    = (local.node_pools[var.default_node_pool].auto_scaling_enabled ? local.node_pools[var.default_node_pool].min_count : null)
+    max_count                    = (local.node_pools[var.default_node_pool].auto_scaling_enabled ? local.node_pools[var.default_node_pool].max_count : null)
+    host_encryption_enabled      = local.node_pools[var.default_node_pool].host_encryption_enabled
+    node_public_ip_enabled       = local.node_pools[var.default_node_pool].node_public_ip_enabled
     type                         = local.node_pools[var.default_node_pool].type
     only_critical_addons_enabled = local.node_pools[var.default_node_pool].only_critical_addons_enabled
     orchestrator_version         = local.node_pools[var.default_node_pool].orchestrator_version
@@ -102,8 +102,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     for_each = var.rbac.enabled ? [1] : []
     content {
       azure_rbac_enabled     = var.rbac.enabled
-      managed                = var.rbac.managed
-      admin_group_object_ids = values(var.rbac_admin_object_ids)
+      admin_group_object_ids = var.rbac.managed ? values(var.rbac_admin_object_ids) : null
     }
   }
 }
@@ -120,22 +119,22 @@ resource "azurerm_kubernetes_cluster_node_pool" "additional" {
 
   kubernetes_cluster_id = azurerm_kubernetes_cluster.aks.id
 
-  name                   = each.key
-  vm_size                = each.value.vm_size
-  os_disk_size_gb        = each.value.os_disk_size_gb
-  os_disk_type           = each.value.os_disk_type
-  zones                  = each.value.zones
-  enable_auto_scaling    = each.value.enable_auto_scaling
-  node_count             = (each.value.enable_auto_scaling ? null : each.value.node_count)
-  min_count              = (each.value.enable_auto_scaling ? each.value.min_count : null)
-  max_count              = (each.value.enable_auto_scaling ? each.value.max_count : null)
-  os_type                = each.value.os_type
-  enable_host_encryption = each.value.enable_host_encryption
-  enable_node_public_ip  = each.value.enable_node_public_ip
-  max_pods               = each.value.max_pods
-  node_labels            = each.value.node_labels
-  orchestrator_version   = each.value.orchestrator_version
-  tags                   = each.value.tags
+  name                    = each.key
+  vm_size                 = each.value.vm_size
+  os_disk_size_gb         = each.value.os_disk_size_gb
+  os_disk_type            = each.value.os_disk_type
+  zones                   = each.value.zones
+  auto_scaling_enabled    = each.value.auto_scaling_enabled
+  node_count              = (each.value.auto_scaling_enabled ? null : each.value.node_count)
+  min_count               = (each.value.auto_scaling_enabled ? each.value.min_count : null)
+  max_count               = (each.value.auto_scaling_enabled ? each.value.max_count : null)
+  os_type                 = each.value.os_type
+  host_encryption_enabled = each.value.host_encryption_enabled
+  node_public_ip_enabled  = each.value.node_public_ip_enabled
+  max_pods                = each.value.max_pods
+  node_labels             = each.value.node_labels
+  orchestrator_version    = each.value.orchestrator_version
+  tags                    = each.value.tags
   vnet_subnet_id = (each.value.subnet != null ?
   local.vnet_ids.subnets[each.value.subnet].id : null)
 

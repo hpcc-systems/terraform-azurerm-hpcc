@@ -91,7 +91,7 @@ resource "helm_release" "hpcc" {
   count = var.disable_helm ? 0 : 1
 
   name                       = var.hpcc.name
-  version                    = var.hpcc.version
+  version                    = var.hpcc.image_version
   chart                      = var.hpcc.remote_chart != null ? "hpcc" : var.hpcc.local_chart
   repository                 = var.hpcc.remote_chart
   create_namespace           = var.hpcc.create_namespace

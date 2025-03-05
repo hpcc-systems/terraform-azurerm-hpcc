@@ -37,7 +37,7 @@ locals {
 
   hpcc_azurefile = templatefile("${path.module}/values/hpcc-azurefile.tftpl", { planes = local.data_planes })
 
-  hpcc_chart_major_minor_point_version = can(var.hpcc.chart_version) ? regex("[\\d+?.\\d+?.\\d+?]+", var.hpcc.chart_version) : "master"
+  hpcc_chart_major_minor_point_version = var.hpcc.image_version != null ? regex("[\\d+?.\\d+?.\\d+?]+", var.hpcc.image_version) : "master"
   elastic4hpcclogs_hpcc_logaccess      = "https://raw.githubusercontent.com/hpcc-systems/helm-chart/${local.hpcc_chart_major_minor_point_version}/helm/managed/logging/elastic/elastic4hpcclogs-hpcc-logaccess.yaml"
 
 
@@ -90,5 +90,5 @@ locals {
   automation_account_name = var.aks_automation.create_new_account ? azurerm_automation_account.automation_account[0].name : var.aks_automation.automation_account_name
   aa_resource_group_name  = var.aks_automation.create_new_account ? azurerm_resource_group.default["automation_account"].name : var.aks_automation.resource_group_name
 
-resource_groups = merge(var.aks_automation.create_new_account?{"automation_account" = "aa-${data.azurerm_subscription.current.display_name}-${local.virtual_network.location}-${random_string.string.result}"}:{}, {"aks" = "aks-${data.azurerm_subscription.current.display_name}-${local.virtual_network.location}-${random_string.string.result}"})
+  resource_groups = merge(var.aks_automation.create_new_account ? { "automation_account" = "aa-${data.azurerm_subscription.current.display_name}-${local.virtual_network.location}-${random_string.string.result}" } : {}, { "aks" = "aks-${data.azurerm_subscription.current.display_name}-${local.virtual_network.location}-${random_string.string.result}" })
 }
